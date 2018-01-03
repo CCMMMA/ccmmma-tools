@@ -144,8 +144,8 @@ public class ROMSWind {
        romsGrid.load(ROMSGrid.VARIABLE_LONU);
        romsGrid.load(ROMSGrid.VARIABLE_LONV);
 
-       ncfWriterBulk =  NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf3, urlBulk, null);
-       ncfWriterUVStress =  NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf3, urlUVStress, null);
+       ncfWriterBulk =  NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf4_classic, urlBulk, null);
+       ncfWriterUVStress =  NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf4_classic, urlUVStress, null);
 
 
        ncfWriterBulk.addGroupAttribute(null,new Attribute("type", "FORCING file Bulk"));

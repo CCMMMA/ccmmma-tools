@@ -185,7 +185,7 @@ public class ROMSBoundary {
         
         OCEAN_TIME=new double[forcingTimeSteps];
           
-        ncfWritable =  NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf3, url, null);
+        ncfWritable =  NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf4_classic, url, null);
         
         ncfWritable.addGroupAttribute(null,new Attribute("type", "Boundary forcing file"));
         ncfWritable.addGroupAttribute(null,new Attribute("title", "Boundary forcing file (BRY) used for foring of the ROMS model"));

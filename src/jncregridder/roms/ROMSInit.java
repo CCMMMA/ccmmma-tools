@@ -146,7 +146,7 @@ import ucar.nc2.Variable;
         System.out.println("dModSimStartDate:"+dModSimStartDate);
 
         
-        ncfWritable =  NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf3, url, null);
+        ncfWritable =  NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf4_classic, url, null);
         
         ncfWritable.addGroupAttribute(null,new Attribute("type", "Initial file"));
         ncfWritable.addGroupAttribute(null,new Attribute("title", "Initialization file (INI) used for foring of the ROMS model"));

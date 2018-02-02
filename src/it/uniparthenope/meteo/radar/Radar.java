@@ -6,16 +6,8 @@ package it.uniparthenope.meteo.radar;
 
 import com.mindprod.ledatastream.LEDataInputStream;
 import com.mindprod.ledatastream.LEDataOutputStream;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.PrintWriter;
+
+import java.io.*;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import jncregridder.util.InterpolatorBase;
@@ -55,17 +47,29 @@ public class Radar {
     private String scanId=null;
     private double lat0=40.8333;
     private double lon0=14.2333;
-    private double rkm0=-1;
+    private double rkm0=108;
+    private double kmPerDeg=111;
     
     private double[][] srcLAT=null;
     private double[][] srcLON=null;
     
     private int[][] dstMASK=null;
     private int[][] srcMASK=null;
-    private double[][] srcData=null;
-    private double[][] dstData=null;
-    private int rData=120;
-    private int nData=-1;
+
+    private double[][] srcReflectivity=null;
+    private double[][] srcRain=null;
+
+    private double[][] dstReflectivity=null;
+    private double[][] dstRain=null;
+
+    private int nRange=240;
+    private int nAzimut=360;
+    private double a=128.3;
+    private double b=1.67;
+
+
+
+    private double azimutRes=1;
     
     
     private GregorianCalendar gcDate=null;
@@ -101,12 +105,13 @@ public class Radar {
             System.out.println("Scan: "+scanId);
             if (scanId.equals("Scan_0")==true) {
                 // 36km
-                rkm0=36;
-                nData=123;
+                //rkm0=36;
+                //nData=123;
+
             } else if (scanId.equals("Scan_1")==true) {
                 // 72km
-                rkm0=72;
-                nData=243;
+                //rkm0=72;
+                //nData=243;
             } else throw new RadarException("Unknown Scan ID: "+scanId+" !");
             
             // 201209141600
@@ -119,8 +124,17 @@ public class Radar {
             int hour=Integer.parseInt(NCEPDate.substring(8,10));;
             int min=Integer.parseInt(NCEPDate.substring(10,12));;
             gcDate=new GregorianCalendar(year,month-1,day,hour,min,0);
-            
-            srcData = new double[nData][rData];
+
+
+            srcReflectivity = new double[nAzimut+1][nRange];
+            for (int j=0;j<nAzimut;j++) {
+                for (int i=0;i<nRange;i++) {
+                    srcReflectivity[j][i]=-999;
+                }
+            }
+
+            srcRain = new double[nAzimut+1][nRange];
+
 
             String[] childrenBin = dir.list(filterBin);
             if (childrenBin != null) {
@@ -135,14 +149,21 @@ public class Radar {
 
 
 
-                    for (int j=0; j < nData; j++) {
-                        for (int i=0; i < rData; i++) {
+                    for (int j=0; j < nAzimut; j++) {
+                        Header header=new Header(ledis);
 
-                            short nextShort = ledis.readShort();
-                            double nextDouble = (nextShort-64)/2.;
-                            if (nextDouble>srcData[j][i]) {
-                                srcData[j][i]=nextDouble;
+                        for (int i=0; i < nRange; i++) {
+                            int nextInt=ledis.readUnsignedShort();
+
+                            int dataFormat=header.getDataFormat();
+                            double q_Z2Level=(Math.pow(2,dataFormat)-1)*(-(-32)/(95.5-(-32)));
+                            double m_Z2Level=(Math.pow(2,dataFormat)-1)/(95.5-(-32));
+                            double dBZ=(nextInt-q_Z2Level)/m_Z2Level;
+
+                            if (dBZ>srcReflectivity[j][i]) {
+                                srcReflectivity[j][i]=dBZ;
                             }
+
                             //int nextInt = (buffer[0] & 0xFF) | (buffer[1] & 0xFF) << 8 | (buffer[2] & 0xFF) << 16 | (buffer[3] & 0xFF) << 24;
 
                         }
@@ -153,23 +174,27 @@ public class Radar {
                     fis.close();   
                 }
 
-                for (int j=0; j < nData; j++) {
-                    for (int i=0; i < rData; i++) {
-                        double rain=Math.pow(Math.pow(10, srcData[j][i]/10)/443.5,0.77);
-                        srcData[j][i]=rain;
+
+                double r10, rain;
+                //a=443.5;
+                //b=1.3;
+
+                for (int j=0; j < nAzimut; j++) {
+                    for (int i=0; i < nRange; i++) {
+                        r10=Math.pow(10,srcReflectivity[j][i]/10);
+                        rain=Math.pow(r10/a,1/b);
+                        srcRain[j][i]=rain;
                     }
                 }
-            } 
+            }
+            for (int i=0; i < nRange; i++) {
+                srcReflectivity[nAzimut][i]=srcReflectivity[0][i];
+                srcRain[nAzimut][i]=srcRain[0][i];
+            }
         }
     }
     
-    
-    
-    
-    
-    
-    
-    
+
     public void loadDstGrid(String dstGridFilename) throws IOException, InvalidRangeException {
         NetcdfDataset ncGrid=NetcdfDataset.openDataset(dstGridFilename);
         dstDimLat = ncGrid.findDimension("latitude");
@@ -212,29 +237,30 @@ public class Radar {
     }
     
     public void createSrcGrid() {
-        double[] rkm = new double[nData];
-        for (int j=0;j<nData;j++) {
-           rkm[j]=rkm0*(j-.5)/nData; 
+        double[] rkm = new double[nRange];
+        for (int i=0;i<nRange;i++) {
+           rkm[i]=rkm0*(i-.5)/nRange;
         }
-        double[] z= new double[rData];
-        for (int i=0;i<rData;i++) {
-            z[i]=Math.PI*(3.+((i-.5)*3.))/180;
+        double[] z= new double[nAzimut];
+        for (int j=0;j<nAzimut;j++) {
+            //z[i]=Math.PI*(3.+((i-.5)*3.))/180;
+            z[j]=Math.PI*(azimutRes+((j-.5)*azimutRes))/180;
         }
         
         //double lat1=lat0+Math.cos(z[z.length-1])*rkm[rkm.length-1]/111;
         //double lon1=lon0+Math.sin(z[z.length-1])*(rkm[rkm.length-1]/111)/Math.cos(Math.PI*lat1/180);
         //double r0=Math.pow((lon1-lon0)*(lon1-lon0)+(lat1-lat0)*(lat1-lat0), .5);
         
-        srcMASK = new int[nData][rData];
+        srcMASK = new int[nAzimut+1][nRange];
         
-        srcLON = new double[nData][rData];
-        srcLAT = new double[nData][rData];
+        srcLON = new double[nAzimut+1][nRange];
+        srcLAT = new double[nAzimut+1][nRange];
         
-        for (int j=0;j<nData;j++) {
-            for (int i=0;i<rData;i++) {
-                srcLAT[j][i]=lat0+Math.cos(z[i])*rkm[j]/111;
-                srcLON[j][i]=lon0+Math.sin(z[i])*(rkm[j]/111)/Math.cos(Math.PI*srcLAT[j][i]/180);
-                if (j!=0) {
+        for (int j=0;j<nAzimut;j++) {
+            for (int i=0;i<nRange;i++) {
+                srcLAT[j][i]=lat0+Math.cos(z[j])*rkm[i]/kmPerDeg;
+                srcLON[j][i]=lon0+Math.sin(z[j])*(rkm[i]/kmPerDeg)/Math.cos(Math.PI*srcLAT[j][i]/180);
+                if (i!=0) {
                     srcMASK[j][i]=1;
                 } else {
                     // System.out.println(srcLON[j][i]+","+srcLAT[j][i]);
@@ -248,13 +274,18 @@ public class Radar {
         double srcLatMin=srcLAT[0][0];
         double srcLatMax=srcLAT[0][0];
         
-        for (int j=0;j<nData;j++) {
-            for (int i=0;i<rData;i++) {
+        for (int j=0;j<nAzimut;j++) {
+            for (int i=0;i<nRange;i++) {
                 if (srcLON[j][i]<srcLonMin) srcLonMin=srcLON[j][i];
                 if (srcLON[j][i]>srcLonMax) srcLonMax=srcLON[j][i];
                 if (srcLAT[j][i]<srcLatMin) srcLatMin=srcLAT[j][i];
                 if (srcLAT[j][i]>srcLatMax) srcLatMax=srcLAT[j][i];
             }
+        }
+        for (int i=0; i < nRange; i++) {
+            srcLON[nAzimut][i]=srcLON[0][i];
+            srcLAT[nAzimut][i]=srcLAT[0][i];
+            srcMASK[nAzimut][i]=srcMASK[0][i];
         }
         System.out.println("src:"+srcLonMin+";"+srcLatMin+"-"+srcLonMax+";"+srcLatMax);
     }
@@ -281,11 +312,22 @@ public class Radar {
 
         for(int j=0;j<rows;j++) {
             for (int i=0;i<cols;i++) {
-                float value=(float)dstData[j][i];
-                
-                if (value<0.01) {
+                float value=(float)dstReflectivity[j][i];
+                if (value<-30) {
                     value=undef;
-                } // else { System.out.println(dstData[j][i]+"->"+value); }
+                }
+                ledos.writeFloat(value);
+            }
+        }
+
+
+        for(int j=0;j<rows;j++) {
+            for (int i=0;i<cols;i++) {
+                float value=(float)dstRain[j][i];
+                
+                if (value<0.1) {
+                    value=undef;
+                }
                 ledos.writeFloat(value);
 
             }
@@ -314,7 +356,8 @@ public class Radar {
             "YDEF "+rows+" LINEAR "+dstLatMin+"  "+dstLatStep+"\n"+
             "ZDEF   1 LEVELS 0\n"+
             "TDEF   1 LINEAR "+gradsStartDate+" 5mn\n"+
-            "VARS      2\n"+
+            "VARS      3\n"+
+            "ref1     0  99  ref1\n"+
             "rain     0  99  rain\n"+
             "mask     0  99  data mask\n"+
             "ENDVARS\n";
@@ -328,7 +371,8 @@ public class Radar {
     
     public void reshape() throws InterpolatorException {
         InterpolatorBase interpolator=new PolarInterpolator(srcLAT,srcLON, dstLAT, dstLON, srcMASK, dstMASK,null);
-        dstData = interpolator.interp(srcData, undef, undef, null);
+        dstReflectivity = interpolator.interp(srcReflectivity, undef, undef, null);
+        dstRain = interpolator.interp(srcRain, undef, undef, null);
         
     }
 
@@ -341,14 +385,14 @@ public class Radar {
     }
 
     public double[][] getRAIN() {
-        return dstData;
+        return dstRain;
     }
 
     public void compose(double[][] rain) {
         for (int j=0;j<rows;j++) {
             for (int i=0;i<cols;i++) {
-                if ((dstData[j][i]==undef && rain[j][i]!=undef) || (dstData[j][i]==0.0 && rain[j][i]!=0.0)) {
-                    dstData[j][i]=rain[j][i];
+                if ((dstRain[j][i]==undef && rain[j][i]!=undef) || (dstRain[j][i]==0.0 && rain[j][i]!=0.0)) {
+                    dstRain[j][i]=rain[j][i];
                 }
             }
         }

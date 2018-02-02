@@ -319,28 +319,28 @@ public class ROMSBoundary {
         
         /* temp */
         
-        temp_west=ncfWritable.addVariable(null,"temp_west", DataType.FLOAT, "ocean_time s_rho eta_rho");
+        temp_west=ncfWritable.addVariable(null,"temp_west", DataType.DOUBLE, "ocean_time s_rho eta_rho");
         temp_west.addAttribute(new Attribute("long_name","potential temperature western boundary conditions"));
         temp_west.addAttribute(new Attribute("units","Celsius"));
         temp_west.addAttribute(new Attribute("field","temp_west, scalar, series"));
         temp_west.addAttribute(new Attribute("missing_value", romsGrid.getNoData()));
         temp_west.addAttribute(new Attribute("time", "ocean_time"));
         
-        temp_east=ncfWritable.addVariable(null,"temp_east", DataType.FLOAT, "ocean_time s_rho eta_rho");
+        temp_east=ncfWritable.addVariable(null,"temp_east", DataType.DOUBLE, "ocean_time s_rho eta_rho");
         temp_east.addAttribute(new Attribute("long_name","potential temperature eastern boundary conditions"));
         temp_east.addAttribute(new Attribute("units","Celsius"));
         temp_east.addAttribute(new Attribute("field","temp_east, scalar, series"));
         temp_east.addAttribute(new Attribute("missing_value", romsGrid.getNoData()));
         temp_east.addAttribute(new Attribute("time", "ocean_time"));
         
-        temp_south=ncfWritable.addVariable(null,"temp_south", DataType.FLOAT, "ocean_time s_rho xi_rho");
+        temp_south=ncfWritable.addVariable(null,"temp_south", DataType.DOUBLE, "ocean_time s_rho xi_rho");
         temp_south.addAttribute(new Attribute("long_name","potential temperature southern boundary conditions"));
         temp_south.addAttribute(new Attribute("units","Celsius"));
         temp_south.addAttribute(new Attribute("field","temp_south, scalar, series"));
         temp_south.addAttribute(new Attribute("missing_value", romsGrid.getNoData()));
         temp_south.addAttribute(new Attribute("time", "ocean_time"));
         
-        temp_north=ncfWritable.addVariable(null,"temp_north", DataType.FLOAT, "ocean_time s_rho xi_rho");
+        temp_north=ncfWritable.addVariable(null,"temp_north", DataType.DOUBLE, "ocean_time s_rho xi_rho");
         temp_north.addAttribute(new Attribute("long_name","potential temperature northen boundary conditions"));
         temp_north.addAttribute(new Attribute("units","Celsius"));
         temp_north.addAttribute(new Attribute("field","temp_south, scalar, series"));
@@ -349,28 +349,28 @@ public class ROMSBoundary {
         
         /* salt */
         
-        salt_west=ncfWritable.addVariable(null,"salt_west", DataType.FLOAT, "ocean_time s_rho eta_rho");
+        salt_west=ncfWritable.addVariable(null,"salt_west", DataType.DOUBLE, "ocean_time s_rho eta_rho");
         salt_west.addAttribute(new Attribute("long_name","salinity western boundary conditions"));
         salt_west.addAttribute(new Attribute("units","PSU"));
         salt_west.addAttribute(new Attribute("field","salt_west, scalar, series"));
         salt_west.addAttribute(new Attribute("missing_value", romsGrid.getNoData()));
         salt_west.addAttribute(new Attribute("time", "ocean_time"));
         
-        salt_east=ncfWritable.addVariable(null,"salt_east", DataType.FLOAT, "ocean_time s_rho eta_rho");
+        salt_east=ncfWritable.addVariable(null,"salt_east", DataType.DOUBLE, "ocean_time s_rho eta_rho");
         salt_east.addAttribute(new Attribute("long_name","salinity eastern boundary conditions"));
         salt_east.addAttribute(new Attribute("units","PSU"));
         salt_east.addAttribute(new Attribute("field","salt_east, scalar, series"));
         salt_east.addAttribute(new Attribute("missing_value", romsGrid.getNoData()));
         salt_east.addAttribute(new Attribute("time", "ocean_time"));
         
-        salt_south=ncfWritable.addVariable(null,"salt_south", DataType.FLOAT, "ocean_time s_rho xi_rho");
+        salt_south=ncfWritable.addVariable(null,"salt_south", DataType.DOUBLE, "ocean_time s_rho xi_rho");
         salt_south.addAttribute(new Attribute("long_name","salinity southern boundary conditions"));
         salt_south.addAttribute(new Attribute("units","PSU"));
         salt_south.addAttribute(new Attribute("field","salt_south, scalar, series"));
         salt_south.addAttribute(new Attribute("missing_value", romsGrid.getNoData()));
         salt_south.addAttribute(new Attribute("time", "ocean_time"));
         
-        salt_north=ncfWritable.addVariable(null,"salt_north", DataType.FLOAT, "ocean_time s_rho xi_rho");
+        salt_north=ncfWritable.addVariable(null,"salt_north", DataType.DOUBLE, "ocean_time s_rho xi_rho");
         salt_north.addAttribute(new Attribute("long_name","salinity northen boundary conditions"));
         salt_north.addAttribute(new Attribute("units","PSU"));
         salt_north.addAttribute(new Attribute("field","salt_north, scalar, series"));
@@ -379,28 +379,28 @@ public class ROMSBoundary {
         
         /* zeta */
         
-        zeta_west=ncfWritable.addVariable(null,"zeta_west", DataType.FLOAT, "ocean_time eta_rho");
+        zeta_west=ncfWritable.addVariable(null,"zeta_west", DataType.DOUBLE, "ocean_time eta_rho");
         zeta_west.addAttribute(new Attribute("long_name","free-surface western boundary conditions"));
         zeta_west.addAttribute(new Attribute("units","meter"));
         zeta_west.addAttribute(new Attribute("field","zeta_west, scalar, series"));
         zeta_west.addAttribute(new Attribute("missing_value", romsGrid.getNoData()));
         zeta_west.addAttribute(new Attribute("time", "ocean_time"));
         
-        zeta_east=ncfWritable.addVariable(null,"zeta_east", DataType.FLOAT, "ocean_time eta_rho");
+        zeta_east=ncfWritable.addVariable(null,"zeta_east", DataType.DOUBLE, "ocean_time eta_rho");
         zeta_east.addAttribute(new Attribute("long_name","free-surface eastern boundary conditions"));
         zeta_east.addAttribute(new Attribute("units","meter"));
         zeta_east.addAttribute(new Attribute("field","zeta_east, scalar, series"));
         zeta_east.addAttribute(new Attribute("missing_value", romsGrid.getNoData()));
         zeta_east.addAttribute(new Attribute("time", "ocean_time"));
         
-        zeta_south=ncfWritable.addVariable(null,"zeta_south", DataType.FLOAT, "ocean_time xi_rho");
+        zeta_south=ncfWritable.addVariable(null,"zeta_south", DataType.DOUBLE, "ocean_time xi_rho");
         zeta_south.addAttribute(new Attribute("long_name","free-surface southern boundary conditions"));
         zeta_south.addAttribute(new Attribute("units","meter"));
         zeta_south.addAttribute(new Attribute("field","zeta_south, scalar, series"));
         zeta_south.addAttribute(new Attribute("missing_value", romsGrid.getNoData()));
         zeta_south.addAttribute(new Attribute("time", "ocean_time"));
         
-        zeta_north=ncfWritable.addVariable(null,"zeta_north", DataType.FLOAT, "ocean_time xi_rho");
+        zeta_north=ncfWritable.addVariable(null,"zeta_north", DataType.DOUBLE, "ocean_time xi_rho");
         zeta_north.addAttribute(new Attribute("long_name","free-surface northen boundary conditions"));
         zeta_north.addAttribute(new Attribute("units","meter"));
         zeta_north.addAttribute(new Attribute("field","zeta_north, scalar, series"));
@@ -410,28 +410,28 @@ public class ROMSBoundary {
 
         /* u */
         
-        u_west=ncfWritable.addVariable(null,"u_west", DataType.FLOAT, "ocean_time s_rho eta_u");
+        u_west=ncfWritable.addVariable(null,"u_west", DataType.DOUBLE, "ocean_time s_rho eta_u");
         u_west.addAttribute(new Attribute("long_name","3D U-momentum western boundary conditions"));
         u_west.addAttribute(new Attribute("units","meter second-1"));
         u_west.addAttribute(new Attribute("field","u_west, scalar, series"));
         u_west.addAttribute(new Attribute("missing_value", romsGrid.getNoData()));
         u_west.addAttribute(new Attribute("time", "ocean_time"));
         
-        u_east=ncfWritable.addVariable(null,"u_east", DataType.FLOAT, "ocean_time s_rho eta_u");
+        u_east=ncfWritable.addVariable(null,"u_east", DataType.DOUBLE, "ocean_time s_rho eta_u");
         u_east.addAttribute(new Attribute("long_name","3D U-momentum eastern boundary conditions"));
         u_east.addAttribute(new Attribute("units","meter second-1"));
         u_east.addAttribute(new Attribute("field","u_east, scalar, series"));
         u_east.addAttribute(new Attribute("missing_value", romsGrid.getNoData()));
         u_east.addAttribute(new Attribute("time", "ocean_time"));
         
-        u_south=ncfWritable.addVariable(null,"u_south", DataType.FLOAT, "ocean_time s_rho xi_u");
+        u_south=ncfWritable.addVariable(null,"u_south", DataType.DOUBLE, "ocean_time s_rho xi_u");
         u_south.addAttribute(new Attribute("long_name","3D U-momentum southern boundary conditions"));
         u_south.addAttribute(new Attribute("units","meter second-1"));
         u_south.addAttribute(new Attribute("field","u_south, scalar, series"));
         u_south.addAttribute(new Attribute("missing_value", romsGrid.getNoData()));
         u_south.addAttribute(new Attribute("time", "ocean_time"));
         
-        u_north=ncfWritable.addVariable(null,"u_north", DataType.FLOAT, "ocean_time s_rho xi_u");
+        u_north=ncfWritable.addVariable(null,"u_north", DataType.DOUBLE, "ocean_time s_rho xi_u");
         u_north.addAttribute(new Attribute("long_name","3D U-momentum northen boundary conditions"));
         u_north.addAttribute(new Attribute("units","meter second-1"));
         u_north.addAttribute(new Attribute("field","u_north, scalar, series"));
@@ -440,28 +440,28 @@ public class ROMSBoundary {
         
         /* v */
         
-        v_west=ncfWritable.addVariable(null,"v_west", DataType.FLOAT, "ocean_time s_rho eta_v");
+        v_west=ncfWritable.addVariable(null,"v_west", DataType.DOUBLE, "ocean_time s_rho eta_v");
         v_west.addAttribute(new Attribute("long_name","3D V-momentum western boundary conditions"));
         v_west.addAttribute(new Attribute("units","meter second-1"));
         v_west.addAttribute(new Attribute("field","v_west, scalar, series"));
         v_west.addAttribute(new Attribute("missing_value", romsGrid.getNoData()));
         v_west.addAttribute(new Attribute("time", "ocean_time"));
         
-        v_east=ncfWritable.addVariable(null,"v_east", DataType.FLOAT, "ocean_time s_rho eta_v");
+        v_east=ncfWritable.addVariable(null,"v_east", DataType.DOUBLE, "ocean_time s_rho eta_v");
         v_east.addAttribute(new Attribute("long_name","3D V-momentum eastern boundary conditions"));
         v_east.addAttribute(new Attribute("units","meter second-1"));
         v_east.addAttribute(new Attribute("field","v_east, scalar, series"));
         v_east.addAttribute(new Attribute("missing_value", romsGrid.getNoData()));
         v_east.addAttribute(new Attribute("time", "ocean_time"));
         
-        v_south=ncfWritable.addVariable(null,"v_south", DataType.FLOAT, "ocean_time s_rho xi_v");
+        v_south=ncfWritable.addVariable(null,"v_south", DataType.DOUBLE, "ocean_time s_rho xi_v");
         v_south.addAttribute(new Attribute("long_name","3D V-momentum southern boundary conditions"));
         v_south.addAttribute(new Attribute("units","meter second-1"));
         v_south.addAttribute(new Attribute("field","v_south, scalar, series"));
         v_south.addAttribute(new Attribute("missing_value", romsGrid.getNoData()));
         v_south.addAttribute(new Attribute("time", "ocean_time"));
         
-        v_north=ncfWritable.addVariable(null,"v_north", DataType.FLOAT, "ocean_time s_rho xi_v");
+        v_north=ncfWritable.addVariable(null,"v_north", DataType.DOUBLE, "ocean_time s_rho xi_v");
         v_north.addAttribute(new Attribute("long_name","3D V-momentum northen boundary conditions"));
         v_north.addAttribute(new Attribute("units","meter second-1"));
         v_north.addAttribute(new Attribute("field","v_north, scalar, series"));
@@ -470,28 +470,28 @@ public class ROMSBoundary {
         
         /* vbar */
         
-        vbar_west=ncfWritable.addVariable(null,"vbar_west", DataType.FLOAT, "ocean_time eta_v");
+        vbar_west=ncfWritable.addVariable(null,"vbar_west", DataType.DOUBLE, "ocean_time eta_v");
         vbar_west.addAttribute(new Attribute("long_name","2D V-momentum western boundary conditions"));
         vbar_west.addAttribute(new Attribute("units","meter second-1"));
         vbar_west.addAttribute(new Attribute("field","vbar_west, scalar, series"));
         vbar_west.addAttribute(new Attribute("missing_value", romsGrid.getNoData()));
         vbar_west.addAttribute(new Attribute("time", "ocean_time"));
         
-        vbar_east=ncfWritable.addVariable(null,"vbar_east", DataType.FLOAT, "ocean_time eta_v");
+        vbar_east=ncfWritable.addVariable(null,"vbar_east", DataType.DOUBLE, "ocean_time eta_v");
         vbar_east.addAttribute(new Attribute("long_name","2D V-momentum eastern boundary conditions"));
         vbar_east.addAttribute(new Attribute("units","meter second-1"));
         vbar_east.addAttribute(new Attribute("field","vbar_east, scalar, series"));
         vbar_east.addAttribute(new Attribute("missing_value", romsGrid.getNoData()));
         vbar_east.addAttribute(new Attribute("time", "ocean_time"));
         
-        vbar_south=ncfWritable.addVariable(null,"vbar_south", DataType.FLOAT, "ocean_time xi_v");
+        vbar_south=ncfWritable.addVariable(null,"vbar_south", DataType.DOUBLE, "ocean_time xi_v");
         vbar_south.addAttribute(new Attribute("long_name","2D V-momentum southern boundary conditions"));
         vbar_south.addAttribute(new Attribute("units","meter second-1"));
         vbar_south.addAttribute(new Attribute("field","vbar_south, scalar, series"));
         vbar_south.addAttribute(new Attribute("missing_value", romsGrid.getNoData()));
         vbar_south.addAttribute(new Attribute("time", "ocean_time"));
         
-        vbar_north=ncfWritable.addVariable(null,"vbar_north", DataType.FLOAT, "ocean_time xi_v");
+        vbar_north=ncfWritable.addVariable(null,"vbar_north", DataType.DOUBLE, "ocean_time xi_v");
         vbar_north.addAttribute(new Attribute("long_name","2D V-momentum northen boundary conditions"));
         vbar_north.addAttribute(new Attribute("units","meter second-1"));
         vbar_north.addAttribute(new Attribute("field","vbar_north, scalar, series"));
@@ -500,28 +500,28 @@ public class ROMSBoundary {
         
         /* ubar */
         
-        ubar_west=ncfWritable.addVariable(null,"ubar_west", DataType.FLOAT, "ocean_time eta_u");
+        ubar_west=ncfWritable.addVariable(null,"ubar_west", DataType.DOUBLE, "ocean_time eta_u");
         ubar_west.addAttribute(new Attribute("long_name","2D U-momentum western boundary conditions"));
         ubar_west.addAttribute(new Attribute("units","meter second-1"));
         ubar_west.addAttribute(new Attribute("field","ubar_west, scalar, series"));
         ubar_west.addAttribute(new Attribute("missing_value", romsGrid.getNoData()));
         ubar_west.addAttribute(new Attribute("time", "ocean_time"));
         
-        ubar_east=ncfWritable.addVariable(null,"ubar_east", DataType.FLOAT, "ocean_time eta_u");
+        ubar_east=ncfWritable.addVariable(null,"ubar_east", DataType.DOUBLE, "ocean_time eta_u");
         ubar_east.addAttribute(new Attribute("long_name","2D U-momentum eastern boundary conditions"));
         ubar_east.addAttribute(new Attribute("units","meter second-1"));
         ubar_east.addAttribute(new Attribute("field","ubar_east, scalar, series"));
         ubar_east.addAttribute(new Attribute("missing_value", romsGrid.getNoData()));
         ubar_east.addAttribute(new Attribute("time", "ocean_time"));
         
-        ubar_south=ncfWritable.addVariable(null,"ubar_south", DataType.FLOAT, "ocean_time xi_u");
+        ubar_south=ncfWritable.addVariable(null,"ubar_south", DataType.DOUBLE, "ocean_time xi_u");
         ubar_south.addAttribute(new Attribute("long_name","2D U-momentum southern boundary conditions"));
         ubar_south.addAttribute(new Attribute("units","meter second-1"));
         ubar_south.addAttribute(new Attribute("field","ubar_south, scalar, series"));
         ubar_south.addAttribute(new Attribute("missing_value", romsGrid.getNoData()));
         ubar_south.addAttribute(new Attribute("time", "ocean_time"));
         
-        ubar_north=ncfWritable.addVariable(null,"ubar_north", DataType.FLOAT, "ocean_time xi_u");
+        ubar_north=ncfWritable.addVariable(null,"ubar_north", DataType.DOUBLE, "ocean_time xi_u");
         ubar_north.addAttribute(new Attribute("long_name","2D U-momentum northen boundary conditions"));
         ubar_north.addAttribute(new Attribute("units","meter second-1"));
         ubar_north.addAttribute(new Attribute("field","u_north, scalar, series"));
@@ -667,17 +667,17 @@ public class ROMSBoundary {
         ArrayDouble.D3 outAU_EAST = new ArrayDouble.D3(1, sRho, etaU);
         ArrayDouble.D3 outAU_SOUTH = new ArrayDouble.D3(1, sRho, xiU);
         ArrayDouble.D3 outAU_NORTH = new ArrayDouble.D3(1, sRho, xiU);
-        
+
         ArrayDouble.D3 outAV_WEST = new ArrayDouble.D3(1, sRho, etaV);
         ArrayDouble.D3 outAV_EAST = new ArrayDouble.D3(1, sRho, etaV);
         ArrayDouble.D3 outAV_SOUTH = new ArrayDouble.D3(1, sRho, xiV);
         ArrayDouble.D3 outAV_NORTH = new ArrayDouble.D3(1, sRho, xiV);
-        
+
         ArrayDouble.D2 outAUBAR_WEST = new ArrayDouble.D2(1, etaU);
         ArrayDouble.D2 outAUBAR_EAST = new ArrayDouble.D2(1, etaU);
         ArrayDouble.D2 outAUBAR_SOUTH = new ArrayDouble.D2(1, xiU);
         ArrayDouble.D2 outAUBAR_NORTH = new ArrayDouble.D2(1, xiU);
-        
+
         ArrayDouble.D2 outAVBAR_WEST = new ArrayDouble.D2(1, etaV);
         ArrayDouble.D2 outAVBAR_EAST = new ArrayDouble.D2(1, etaV);
         ArrayDouble.D2 outAVBAR_SOUTH = new ArrayDouble.D2(1, xiV);
@@ -711,25 +711,25 @@ public class ROMSBoundary {
 
             for (int j=0;j<etaU;j++) {
                 outAU_WEST.set(0,k,j,U[k][j][0]);
-                outAU_EAST.set(0,k,j,U[k][j][dimXiU.getLength()-1]);  
+                outAU_EAST.set(0,k,j,U[k][j][dimXiU.getLength()-1]);
 
             }
 
             for (int i=0;i<xiU;i++) {
                 outAU_SOUTH.set(0,k,i,U[k][0][i]);
-                outAU_NORTH.set(0,k,i,U[k][dimEtaU.getLength()-1][i]);  
+                outAU_NORTH.set(0,k,i,U[k][dimEtaU.getLength()-1][i]);
 
             }
 
             for (int j=0;j<etaV;j++) {
                 outAV_WEST.set(0,k,j,V[k][j][0]);
-                outAV_EAST.set(0,k,j,V[k][j][dimXiV.getLength()-1]);  
+                outAV_EAST.set(0,k,j,V[k][j][dimXiV.getLength()-1]);
 
             }
 
             for (int i=0;i<xiV;i++) {
                 outAV_SOUTH.set(0,k,i,V[k][0][i]);
-                outAV_NORTH.set(0,k,i,V[k][dimEtaV.getLength()-1][i]);  
+                outAV_NORTH.set(0,k,i,V[k][dimEtaV.getLength()-1][i]);
 
             }
         }

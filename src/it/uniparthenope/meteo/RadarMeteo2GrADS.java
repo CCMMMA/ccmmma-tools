@@ -26,12 +26,12 @@ public class RadarMeteo2GrADS {
     
     
     public static void main(String[] args) throws Exception {
-        String cabContentPath="/Users/raffaelemontella/tmp/myocean2roms/radar/work/cabs";
-        String currScanXDirname="A00-201209141600";
-        String dstGridFilename="/Users/raffaelemontella/tmp/myocean2roms/radar/latlon_radar_grads_dbl.nc";
-        String outputPath="/Users/raffaelemontella/tmp/myocean2roms/radar/";
+        String cabContentPath="/Users/raffaelemontella/dev/radar/tmp";
+        String currScanXDirname="A00-201801120600";
+        String dstGridFilename="/Users/raffaelemontella/dev/radar/grids/latlon_radar_grads_dbl.nc";
+        String outputPath="/Users/raffaelemontella/dev/radar/output";
         String fileNameBase="rdr1_d04_";
-        
+
         if (args.length!=5) {
             System.out.println("Usage:\n... cabContentPath currScanXDirname dstGridFilename outputPath fileNameBase");
             System.exit(-1);
@@ -42,7 +42,7 @@ public class RadarMeteo2GrADS {
         dstGridFilename=args[2];
         outputPath=args[3];
         fileNameBase=args[4];
-        
+
         RadarMeteo2GrADS radarMeteo2GrADS = new RadarMeteo2GrADS(cabContentPath, currScanXDirname, dstGridFilename, outputPath, fileNameBase);
         
         

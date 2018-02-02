@@ -177,9 +177,6 @@ public class PolarInterpolator extends InterpolatorBase {
     @Override
     public double[][] interp(double[][] src, double srcMissingValue, double dstMissingValue, double[] params) throws InterpolatorException {
         double[][] dst = new double[dstLAT.length][dstLON[0].length];
-        
-        
-            
 
         for (int dstJ=0;dstJ<dstLAT.length;dstJ++) {
             for (int dstI=0;dstI<dstLON[0].length;dstI++) {
@@ -195,7 +192,4 @@ public class PolarInterpolator extends InterpolatorBase {
         
         return dst;
     }
-
-   
-    
 }

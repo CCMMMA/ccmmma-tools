@@ -49,12 +49,13 @@ public class MyOcean2ROMS {
     public static void main(String[] args) throws IOException, NCRegridderException, KrigingException, NoSuchAlgorithmException, InterpolatorException, InvalidRangeException { // Diana
         try {
             
-            if (args.length != 9) {
+            if (args.length != 10) {
                 System.out.println("Usage:");
-                System.out.println("MyOcean2ROMS gridPath dataPath YYYYMMDD domainId initFilename boundaryFilename csvPath subset2D subset3D");
+                System.out.println("MyOcean2ROMS gridPath dataPath YYYYMMDD domainId initFilename boundaryFilename method csvPath subset2D subset3D");
+                System.out.println("method: 0 -Kriging; 1-Fast Kriging(suggested); 2-Bilinear; 3-Bicubic");
                 System.exit(0);
             }
-            new MyOcean2ROMS(args[0],args[1],args[2],args[3],args[4],args[5],args[6],Double.parseDouble(args[7]),Double.parseDouble(args[8]));
+            new MyOcean2ROMS(args[0],args[1],args[2],args[3],args[4],args[5], Integer.parseInt(args[6]),args[7],Double.parseDouble(args[8]),Double.parseDouble(args[9]));
         } catch (InvalidRangeException ex) {// Diana
             Logger.getLogger(MyOcean2ROMS.class.getName()).log(Level.SEVERE, null, ex); // Diana
         } 
@@ -63,7 +64,7 @@ public class MyOcean2ROMS {
     private ROMSBoundary romsBoundary=null; 
     private ROMSInit romsInit=null;
     
-    public MyOcean2ROMS(String gridPath, String dataPath, String ncepDate, String domainId, String initPath, String boundaryPath, String csvPath, double subset2D, double subset3D ) throws IOException, NCRegridderException, InvalidRangeException, KrigingException, NoSuchAlgorithmException, InterpolatorException { // Diana aggiunta eccezioni
+    public MyOcean2ROMS(String gridPath, String dataPath, String ncepDate, String domainId, String initPath, String boundaryPath, int method, String csvPath, double subset2D, double subset3D ) throws IOException, NCRegridderException, InvalidRangeException, KrigingException, NoSuchAlgorithmException, InterpolatorException { // Diana aggiunta eccezioni
         
         
         
@@ -380,7 +381,7 @@ public class MyOcean2ROMS {
                 System.out.println("Preparing 3D...");
             
             
-                int method=1;
+                //int method=1;
 
                 if (method==0) {
                     InterpolatorParams params = new InterpolatorParams();

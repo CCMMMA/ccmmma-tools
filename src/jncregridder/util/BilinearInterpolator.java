@@ -42,7 +42,8 @@ public class BilinearInterpolator extends InterpolatorBase {
         double srcLonStep=srcLonDelta/srcXi;
         
         double dstLat,dstLon;
-        
+
+
         int[] II=new int[4];
         int[] JJ=new int[4];
         double[] q=new double[4];
@@ -53,27 +54,102 @@ public class BilinearInterpolator extends InterpolatorBase {
         int srcCount=0;
         double dstMean=0;
         int dstCount=0;
-        
+
+        // Allocate the destination matrix
         double[][] dst = new double[dstEta][dstXi];
+
+        // For each row
         for (int dstJ=0;dstJ<dstEta;dstJ++) {
+            // For each cel
             for (int dstI=0;dstI<dstXi;dstI++) {
+
+                // Consider only sea (skip land)
                 if (dstMASK[dstJ][dstI]==1) {
+
+                    // Get the destination coordinates in longitude and latitudes
                     dstLon=dstLON[dstJ][dstI];
                     dstLat=dstLAT[dstJ][dstI];
 
+                    // Evaluate the real indexes in the source matrix
                     double srcII=(dstLon-srcLonMin)/srcLonStep;
                     double srcJJ=(dstLat-srcLatMin)/srcLatStep;
 
+                    // Consider the integer part of the indexes
                     int iR=(int)(srcII);
                     int jR=(int)(srcJJ);
 
+                    // The number of weights considered for interpolation
                     int nW=0;
+
                     int b=0;
                     do {
                         b++;
+
+
+
+
+                        // Temporary II vertices
                         int[] tII = new int[] { iR-(b-1),iR+b,iR+b,iR-(b-1) };
+
+                        for (int i=0;i<tII.length;i++) {
+                            if (tII[i]>=src[0].length) {
+                                tII[i]=src[0].length-1;
+                            }
+                        }
+                        /*
+                        System.out.print(b+" tII:");
+                        for (int tI:tII) {
+                            System.out.print(tI+",");
+                        }
+                        System.out.println("");
+                        */
+
+                        // Temporary JJ vertices
                         int[] tJJ = new int[] { jR-(b-1),jR-(b-1),jR+b,jR+b };
-                        double[] tQ = { src[jR-(b-1)][iR-(b-1)],src[jR-(b-1)][iR+b],src[jR+b][iR+b],src[jR+b][iR-(b-1)]};
+                        for (int j=0;j<tJJ.length;j++) {
+                            if (tJJ[j]>=src.length) {
+                                tJJ[j]=src.length-1;
+                            }
+                        }
+
+                        /*
+                        System.out.print(b+" tJJ:");
+                        for (int tJ:tJJ) {
+                            System.out.print(tJ+",");
+                        }
+                        System.out.println("");
+                        */
+
+                        double[] tQ = {
+                                src[tJJ[0]][tII[0]],
+                                src[tJJ[0]][tII[2]],
+                                src[tJJ[2]][tII[2]],
+                                src[tJJ[2]][tII[0]]
+                        };
+
+                        /*
+                        double q1=src[jR-(b-1)][iR-(b-1)];
+                        double q2=src[jR-(b-1)][iR+b];
+                        double q3=src[jR+b][iR+b];
+                        double q4=src[jR+b][iR-(b-1)];
+
+                        double[] tQ = {
+                                q1,
+                                q2,
+                                q3,
+                                q4
+                        };
+
+                        */
+                        /*
+                        double[] tQ = {
+                                src[jR-(b-1)][iR-(b-1)],
+                                src[jR-(b-1)][iR+b],
+                                src[jR+b][iR+b],
+                                src[jR+b][iR-(b-1)]
+                        };
+                        */
+
                         nW=0;
                         for (int l=0;l<4;l++) {
                             //System.out.println(tJJ[l]+" "+tII[l]+":"+tQ[l]);
@@ -85,15 +161,15 @@ public class BilinearInterpolator extends InterpolatorBase {
                             }
                         }
                         
-                    } while (nW==0);
+                    } while (nW==0 & b<3);
 
 
                     double latIJ,lonIJ;
                     double dS=0;
 
                     if (nW==0) {
-                        throw new InterpolatorException("nW is 0! ("+dstLon+","+dstLat+")");
-                        
+                        //throw new InterpolatorException("nW is 0! ("+dstLon+","+dstLat+")");
+                        dst[dstJ][dstI]=dstMissingValue;
                     } else if (nW==1) {
                         dst[dstJ][dstI]=q[0];
                         srcMean+=q[0];
@@ -138,9 +214,15 @@ public class BilinearInterpolator extends InterpolatorBase {
             
             
         }
+
+        // Calculate the control values
         srcMean=srcMean/srcCount;
         dstMean=dstMean/dstCount;
+
+        // Show the control values
         System.out.println("srcMean:"+srcMean+" dstMean:"+dstMean);
+
+        // Return the results
         return dst;
     }
     

@@ -85,27 +85,21 @@ public class BilinearInterpolator extends InterpolatorBase {
                     do {
                         b++;
 
-
-
-
                         // Temporary II vertices
                         int[] tII = new int[] { iR-(b-1),iR+b,iR+b,iR-(b-1) };
 
+                        // Limit the II index
                         for (int i=0;i<tII.length;i++) {
                             if (tII[i]>=src[0].length) {
                                 tII[i]=src[0].length-1;
                             }
                         }
-                        /*
-                        System.out.print(b+" tII:");
-                        for (int tI:tII) {
-                            System.out.print(tI+",");
-                        }
-                        System.out.println("");
-                        */
+
 
                         // Temporary JJ vertices
                         int[] tJJ = new int[] { jR-(b-1),jR-(b-1),jR+b,jR+b };
+
+                        // Limit the JJ index
                         for (int j=0;j<tJJ.length;j++) {
                             if (tJJ[j]>=src.length) {
                                 tJJ[j]=src.length-1;
@@ -113,46 +107,23 @@ public class BilinearInterpolator extends InterpolatorBase {
                         }
 
                         /*
-                        System.out.print(b+" tJJ:");
-                        for (int tJ:tJJ) {
-                            System.out.print(tJ+",");
-                        }
-                        System.out.println("");
-                        */
-
                         double[] tQ = {
                                 src[tJJ[0]][tII[0]],
                                 src[tJJ[0]][tII[2]],
                                 src[tJJ[2]][tII[2]],
                                 src[tJJ[2]][tII[0]]
                         };
-
-                        /*
-                        double q1=src[jR-(b-1)][iR-(b-1)];
-                        double q2=src[jR-(b-1)][iR+b];
-                        double q3=src[jR+b][iR+b];
-                        double q4=src[jR+b][iR-(b-1)];
+                        */
 
                         double[] tQ = {
-                                q1,
-                                q2,
-                                q3,
-                                q4
+                                src[tJJ[0]][tII[0]],
+                                src[tJJ[1]][tII[1]],
+                                src[tJJ[2]][tII[2]],
+                                src[tJJ[3]][tII[3]]
                         };
-
-                        */
-                        /*
-                        double[] tQ = {
-                                src[jR-(b-1)][iR-(b-1)],
-                                src[jR-(b-1)][iR+b],
-                                src[jR+b][iR+b],
-                                src[jR+b][iR-(b-1)]
-                        };
-                        */
 
                         nW=0;
                         for (int l=0;l<4;l++) {
-                            //System.out.println(tJJ[l]+" "+tII[l]+":"+tQ[l]);
                             if (Double.isNaN(tQ[l])==false && tQ[l]!=srcMissingValue) {
                                 q[nW]=tQ[l];
                                 JJ[nW]=tJJ[nW];

@@ -1,13 +1,16 @@
 
-package jncregridder.myocean;
+package jncregridder.data.myocean;
 
 import java.io.IOException;
+
+import jncregridder.data.ISeaSurfaceHeight;
+import jncregridder.data.OceanGridEU;
 import jncregridder.util.NCRegridderException;
 import ucar.ma2.ArrayFloat;
 import ucar.ma2.InvalidRangeException;
 import ucar.nc2.Variable;
 
-public class MyOceanSSH extends MyOceanGrid {
+public class MyOceanSSH extends OceanGridEU implements ISeaSurfaceHeight {
     
     private double[][] SOSSHEIG = null;  
     
@@ -18,6 +21,9 @@ public class MyOceanSSH extends MyOceanGrid {
     
     public double[][] getSOSSHEIG() throws NCRegridderException { return load(VARIABLE_SOSSHEIG)[0]; }
     public static final int VARIABLE_SOSSHEIG=27;
+
+
+    public double[][] getZeta() throws NCRegridderException { return getSOSSHEIG(); }
     
     public MyOceanSSH(String url) throws IOException, NCRegridderException {
         super(url);

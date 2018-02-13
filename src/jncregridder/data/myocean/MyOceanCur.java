@@ -2,9 +2,12 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package jncregridder.myocean;
+package jncregridder.data.myocean;
 
 import java.io.IOException;
+
+import jncregridder.data.ICurrent;
+import jncregridder.data.OceanGridEU;
 import jncregridder.util.NCRegridderException;
 import ucar.ma2.ArrayFloat;
 import ucar.ma2.InvalidRangeException;
@@ -14,7 +17,7 @@ import ucar.nc2.Variable;
  *
  * @author raffaelemontella
  */
-public class MyOceanCur extends MyOceanGrid {
+public class MyOceanCur extends OceanGridEU implements ICurrent {
     
     private double[][] SOMESTDY = null;
     private double[][] SOZOSDX1 = null;
@@ -36,6 +39,9 @@ public class MyOceanCur extends MyOceanGrid {
     public double[][][] getVOZOCRTX() throws NCRegridderException { return load(VARIABLE_VOZOCRTX); }
     public double[][] getVOMECRTY(int depth) throws NCRegridderException { return load(VARIABLE_VOMECRTY)[depth];}
     public double[][] getVOZOCRTX(int depth) throws NCRegridderException { return load(VARIABLE_VOZOCRTX)[depth];}
+
+    public double[][][] getCurU() throws NCRegridderException { return getVOMECRTY(); }
+    public double[][][] getCurV() throws NCRegridderException { return getVOZOCRTX(); }
     
     public static final int VARIABLE_SOMESTDY=21;
     public static final int VARIABLE_SOZOSDX1=22;

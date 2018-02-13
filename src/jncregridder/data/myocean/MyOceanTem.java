@@ -2,8 +2,11 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package jncregridder.myocean;
+package jncregridder.data.myocean;
 import java.io.IOException;
+
+import jncregridder.data.IPotentialTemperature;
+import jncregridder.data.OceanGridEU;
 import jncregridder.util.NCRegridderException;
 import ucar.ma2.ArrayFloat;
 import ucar.ma2.InvalidRangeException;
@@ -12,7 +15,7 @@ import ucar.nc2.Variable;
  *
  * @author Diana Di Luccio
  */
-public class MyOceanTem extends MyOceanGrid {
+public class MyOceanTem extends OceanGridEU implements IPotentialTemperature {
    private double[][][] VOTEMPER = null;
    
     public void setTime(int localTime)  {
@@ -24,8 +27,10 @@ public class MyOceanTem extends MyOceanGrid {
     
     public double[][][] getVOTEMPER() throws NCRegridderException { return load(VARIABLE_VOTEMPER); }
     public double[][] getVOTEMPER(int depth) throws NCRegridderException { return load(VARIABLE_VOTEMPER)[depth];}
-    
-    
+
+    public double[][][] getTemp() throws NCRegridderException { return getVOTEMPER(); }
+    public double[][] getTemp(int depth) throws NCRegridderException { return getVOTEMPER(depth); }
+
     public static final int VARIABLE_VOTEMPER=25;
     
     

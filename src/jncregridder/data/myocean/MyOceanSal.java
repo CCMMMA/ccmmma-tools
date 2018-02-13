@@ -2,8 +2,11 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package jncregridder.myocean;
+package jncregridder.data.myocean;
 import java.io.IOException;
+
+import jncregridder.data.ISalinity;
+import jncregridder.data.OceanGridEU;
 import jncregridder.util.NCRegridderException;
 import ucar.ma2.ArrayFloat;
 import ucar.ma2.InvalidRangeException;
@@ -12,7 +15,7 @@ import ucar.nc2.Variable;
  *
  * @author Diana Di Luccio
  */
-public class MyOceanSal extends MyOceanGrid {
+public class MyOceanSal extends OceanGridEU implements ISalinity {
    private double[][][] VOSALINE = null;
    
    public void setTime(int localTime)  {
@@ -24,6 +27,9 @@ public class MyOceanSal extends MyOceanGrid {
     
     public double[][][] getVOSALINE() throws NCRegridderException { return load(VARIABLE_VOSALINE); }
     public double[][] getVOSALINE(int depth) throws NCRegridderException { return load(VARIABLE_VOSALINE)[depth];}
+
+    public double[][][] getSalt() throws NCRegridderException { return getVOSALINE(); }
+    public double[][] getSalt(int depth) throws NCRegridderException { return getVOSALINE(depth); }
     
     
     public static final int VARIABLE_VOSALINE=26;

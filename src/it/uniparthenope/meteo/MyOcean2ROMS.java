@@ -7,17 +7,22 @@ package it.uniparthenope.meteo;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jncregridder.myocean.MyOceanCur;
-import jncregridder.myocean.MyOceanGrid;
-import jncregridder.myocean.MyOceanSSH;
-import jncregridder.myocean.MyOceanSal;
-import jncregridder.myocean.MyOceanTem;
+
+import jncregridder.data.ICurrent;
+import jncregridder.data.IPotentialTemperature;
+import jncregridder.data.ISalinity;
+import jncregridder.data.ISeaSurfaceHeight;
+import jncregridder.data.copernicus.CopernicusCur;
+import jncregridder.data.copernicus.CopernicusSSH;
+import jncregridder.data.copernicus.CopernicusSal;
+import jncregridder.data.copernicus.CopernicusTem;
+import jncregridder.data.myocean.MyOceanCur;
+import jncregridder.data.myocean.MyOceanSSH;
+import jncregridder.data.myocean.MyOceanSal;
+import jncregridder.data.myocean.MyOceanTem;
 import jncregridder.roms.ROMSBoundary;
 import jncregridder.roms.ROMSGrid;
 import jncregridder.roms.ROMSInit;
@@ -26,15 +31,12 @@ import jncregridder.util.BiCubicInterpolator3D;
 import jncregridder.util.BilinearInterpolator;
 import jncregridder.util.BilinearInterpolator3D;
 import jncregridder.util.FastKInterpolator3D;
-import jncregridder.util.CustomInterpolator;
-import jncregridder.util.CustomInterpolator3D;
 import jncregridder.util.InterpolatorException;
 import jncregridder.util.InterpolatorParams;
 import jncregridder.util.KInterpolator;
 import jncregridder.util.KInterpolator3D;
 import jncregridder.util.KrigingException;
 import jncregridder.util.NCRegridderException;
-import jncregridder.util.Point2D;
 import ucar.ma2.InvalidRangeException;
 
 /**
@@ -43,19 +45,23 @@ import ucar.ma2.InvalidRangeException;
  */
 public class MyOcean2ROMS {
 
+    private static final int MYOCEAN=0;
+    private static final int COPERNICUS=1;
+
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) throws IOException, NCRegridderException, KrigingException, NoSuchAlgorithmException, InterpolatorException, InvalidRangeException { // Diana
         try {
             
-            if (args.length != 10) {
+            if (args.length != 11) {
                 System.out.println("Usage:");
-                System.out.println("MyOcean2ROMS gridPath dataPath YYYYMMDD domainId initFilename boundaryFilename method csvPath subset2D subset3D");
+                System.out.println("MyOcean2ROMS gridPath dataPath YYYYMMDD domainId initFilename boundaryFilename method csvPath subset2D subset3D format");
                 System.out.println("method: 0 -Kriging; 1-Fast Kriging(suggested); 2-Bilinear; 3-Bicubic");
+                System.out.println("format: 0 -MyOcean; 1-Copernicus");
                 System.exit(0);
             }
-            new MyOcean2ROMS(args[0],args[1],args[2],args[3],args[4],args[5], Integer.parseInt(args[6]),args[7],Double.parseDouble(args[8]),Double.parseDouble(args[9]));
+            new MyOcean2ROMS(args[0],args[1],args[2],args[3],args[4],args[5], Integer.parseInt(args[6]),args[7],Double.parseDouble(args[8]),Double.parseDouble(args[9]),Integer.parseInt(args[10]));
         } catch (InvalidRangeException ex) {// Diana
             Logger.getLogger(MyOcean2ROMS.class.getName()).log(Level.SEVERE, null, ex); // Diana
         } 
@@ -64,7 +70,7 @@ public class MyOcean2ROMS {
     private ROMSBoundary romsBoundary=null; 
     private ROMSInit romsInit=null;
     
-    public MyOcean2ROMS(String gridPath, String dataPath, String ncepDate, String domainId, String initPath, String boundaryPath, int method, String csvPath, double subset2D, double subset3D ) throws IOException, NCRegridderException, InvalidRangeException, KrigingException, NoSuchAlgorithmException, InterpolatorException { // Diana aggiunta eccezioni
+    public MyOcean2ROMS(String gridPath, String dataPath, String ncepDate, String domainId, String initPath, String boundaryPath, int method, String csvPath, double subset2D, double subset3D,int format ) throws IOException, NCRegridderException, InvalidRangeException, KrigingException, NoSuchAlgorithmException, InterpolatorException { // Diana aggiunta eccezioni
         
         
         
@@ -209,24 +215,49 @@ public class MyOcean2ROMS {
                 pw.close();
                 fw.close();
             }
-            
-            // Open MyOcean input files
-            MyOceanTem myOceanTem = new MyOceanTem(myOceanPathTem); // Diana
-            MyOceanSal myOceanSal = new MyOceanSal(myOceanPathSal); // Diana
-            MyOceanSSH myOceanSSH = new MyOceanSSH(myOceanPathSSH); // Diana
-            MyOceanCur myOceanCur = new MyOceanCur(myOceanPathCur);
+
+            IPotentialTemperature dataTem;
+            ISalinity dataSal;
+            ISeaSurfaceHeight dataSSH;
+            ICurrent dataCur;
+
+
+
+            switch (format) {
+                case MYOCEAN:
+                    dataTem=new MyOceanTem(myOceanPathTem);
+                    dataSal = new MyOceanSal(myOceanPathSal); // Diana
+                    dataSSH = new MyOceanSSH(myOceanPathSSH); // Diana
+                    dataCur = new MyOceanCur(myOceanPathCur);
+                    break;
+
+                case COPERNICUS:
+                    dataTem=new CopernicusTem(myOceanPathTem);
+                    dataSal = new CopernicusSal(myOceanPathSal); // Diana
+                    dataSSH = new CopernicusSSH(myOceanPathSSH); // Diana
+                    dataCur = new CopernicusCur(myOceanPathCur);
+                    break;
+
+                default:
+                    dataTem=new MyOceanTem(myOceanPathTem);
+                    dataSal = new MyOceanSal(myOceanPathSal);
+                    dataSSH = new MyOceanSSH(myOceanPathSSH);
+                    dataCur = new MyOceanCur(myOceanPathCur);
+            }
+
+
 
             // LAT at XY points
-            double[][] LATXY = myOceanCur.getLAT2();
+            double[][] LATXY = dataCur.getLAT2();
             
             // LON at XY points
-            double[][] LONXY = myOceanCur.getLON2();
+            double[][] LONXY = dataCur.getLON2();
             
             
             
             
             // Z at XY points
-            double[][][] myOceanZ = myOceanCur.getZ();
+            double[][][] myOceanZ = dataCur.getZ();
             
             for (int k=0;k<myOceanZ.length;k++) {
                 for (int j=0;j<myOceanZ[0].length;j++) {
@@ -238,7 +269,7 @@ public class MyOcean2ROMS {
                 }    
             }
             
-            double time[] = myOceanCur.getTIME();
+            double time[] = dataCur.getTIME();
             int forcingTimeSteps=time.length;
             
             
@@ -268,21 +299,21 @@ public class MyOcean2ROMS {
                 System.out.println("Time:"+t+" "+oceanTime[t]);
                 
                 // Set the time step
-                myOceanCur.setTime(t);
-                myOceanTem.setTime(t);
-                myOceanSal.setTime(t);
-                myOceanSSH.setTime(t);
+                dataCur.setTime(t);
+                dataTem.setTime(t);
+                dataSal.setTime(t);
+                dataSSH.setTime(t);
                 
                 // Surface current U component
-                double[][] SOZOSDX1 = myOceanCur.getSOZOSDX1();
+                //double[][] SOZOSDX1 = dataCur.getSOZOSDX1();
 
                 // Surface current V component
-                double[][] SOMESTDY = myOceanCur.getSOMESTDY(); 
+                //double[][] SOMESTDY = dataCur.getSOMESTDY();
 
                 // Rotate 
             
                 // 2D sea surface height 
-                double[][] SOSSHEIG = myOceanSSH.getSOSSHEIG(); //Diana
+                double[][] SOSSHEIG = dataSSH.getZeta(); //Diana
 
                 int[][] srcMASK = new int[LATXY.length][LATXY[0].length];
                 for (int j=0;j<LATXY.length;j++) {
@@ -294,7 +325,10 @@ public class MyOcean2ROMS {
                         }
                     }
                 }
-            
+
+                FileWriter fw;
+                PrintWriter pw;
+            /*
                 // Just for debugging/controlling:
                 // Write a csv file with LAT, LON, surface current magnitude
                 FileWriter fw = new FileWriter(csvPath+"/myocean-ssh.csv");
@@ -315,7 +349,7 @@ public class MyOcean2ROMS {
                 pw.flush();
                 pw.close();
                 fw.close();
-            
+            */
                 double[] pIntegralScale = {1,1,1};
 
                 double[][] SSHE_ROMS= null;
@@ -361,10 +395,10 @@ public class MyOcean2ROMS {
             
             
                 // 3D current U component
-                double[][][] VOZOCRTX = myOceanCur.getVOZOCRTX();
+                double[][][] VOZOCRTX = dataCur.getCurU();
 
                 // 3D current V component
-                double[][][] VOMECRTY = myOceanCur.getVOMECRTY();
+                double[][][] VOMECRTY = dataCur.getCurV();
 
                 System.out.println("Rotating 3D UV...");
                 for(int k=0;k<myOceanZ.length;k++) {
@@ -372,10 +406,10 @@ public class MyOcean2ROMS {
                 }
             
                 // 3D temperature
-                double[][][] VOTEMPER = myOceanTem.getVOTEMPER(); //Diana
+                double[][][] VOTEMPER = dataTem.getTemp(); //Diana
 
                 // 3D salinity
-                double[][][] VOSALINE = myOceanSal.getVOSALINE(); //Diana
+                double[][][] VOSALINE = dataSal.getSalt(); //Diana
 
             
                 System.out.println("Preparing 3D...");

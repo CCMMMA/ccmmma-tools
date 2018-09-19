@@ -1,6 +1,7 @@
 package jncregridder.data;
 
 import jncregridder.util.NCRegridderException;
+import ucar.ma2.ArrayDouble;
 import ucar.ma2.ArrayFloat;
 import ucar.ma2.ArrayInt;
 import ucar.ma2.InvalidRangeException;
@@ -156,8 +157,8 @@ public class OceanGridEU implements IOceanGrid{
                     Variable var = ncDataset.findVariable("time");
                     if (var!=null) {
                         try {
-                            ArrayInt.D1 a = (ArrayInt.D1)var.read(new int[] { 0 }, new int[] {time});
-                            int[] nTIME = (int[])a.copyToNDJavaArray();
+                            ArrayDouble.D1 a = (ArrayDouble.D1)var.read(new int[] { 0 }, new int[] {time});
+                            double[] nTIME = (double[])a.copyToNDJavaArray();
                             TIME = new double[nTIME.length];
                             for (int i=0;i<nTIME.length;i++) {
                                 TIME[i]=(double)nTIME[i];

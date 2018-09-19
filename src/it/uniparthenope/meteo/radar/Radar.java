@@ -80,9 +80,15 @@ public class Radar {
     private GregorianCalendar gcDate=null;
     
     
-    public Radar(String cabContentPath) throws FileNotFoundException, IOException, RadarException {
+    public Radar(double lon0, double lat0, double rkm0, double kmPerDeg, int nRange, int nAzimut, double a, double b, String cabContentPath) throws FileNotFoundException, IOException, RadarException {
         
-        
+        this.lon0=lon0;
+        this.lat0=lat0;
+        this.rkm0=rkm0;
+        this.kmPerDeg=kmPerDeg;
+        this.a=a;
+        this.b=b;
+
         
         File dir = new File(cabContentPath);
         

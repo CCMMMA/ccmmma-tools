@@ -20,27 +20,45 @@ public class RadarMeteo2NetCDF {
         String dstGridFilename="/Users/raffaelemontella/dev/ccmmma/radar/grids/latlon_radar_grads_dbl.nc";
         String outputFilename="/Users/raffaelemontella/dev/ccmmma/radar/output/rdr1_d04_20180610Z0510.nc";
 
+        double lat0=40.8333;
+        double lon0=14.2333;
+        double rkm0=108;
+        double kmPerDeg=111;
 
-        if (args.length!=4) {
-            System.out.println("Usage:\n... cabContentPath currScanXDirname dstGridFilename outputFilename");
+        int nRange=240;
+        int nAzimut=360;
+        double a=128.3;
+        double b=1.67;
+
+
+        if (args.length!=12) {
+            System.out.println("Usage:\n... lon0 lat0 rkm0 kmPerDeg nRange nAzimut a b cabContentPath currScanXDirname dstGridFilename outputFilename");
             System.exit(-1);
         }
 
-        cabContentPath=args[0];
-        currScanXDirname=args[1];
-        dstGridFilename=args[2];
-        outputFilename=args[3];
+        lon0=Double.parseDouble(args[0]);
+        lat0=Double.parseDouble(args[1]);
+        rkm0=Double.parseDouble(args[2]);
+        kmPerDeg=Double.parseDouble(args[3]);
+        nRange=Integer.parseInt(args[4]);
+        nAzimut=Integer.parseInt(args[5]);
+        a=Double.parseDouble(args[6]);
+        b=Double.parseDouble(args[7]);
+        cabContentPath=args[8];
+        currScanXDirname=args[9];
+        dstGridFilename=args[10];
+        outputFilename=args[11];
 
 
-        RadarMeteo2NetCDF radarMeteo2NetCDF = new RadarMeteo2NetCDF(cabContentPath, currScanXDirname, dstGridFilename,  outputFilename);
+        RadarMeteo2NetCDF radarMeteo2NetCDF = new RadarMeteo2NetCDF(lon0,  lat0,  rkm0,  kmPerDeg,  nRange,  nAzimut,  a,  b, cabContentPath, currScanXDirname, dstGridFilename,  outputFilename);
 
 
     }
 
-    public RadarMeteo2NetCDF(String cabContentPath, String currScanXDirname, String dstGridFilename, String outputFilename) {
+    public RadarMeteo2NetCDF(double lon0, double lat0, double rkm0, double kmPerDeg, int nRange, int nAzimut, double a, double b, String cabContentPath, String currScanXDirname, String dstGridFilename, String outputFilename) {
         Radar rmCurrScanX;
         try {
-            rmCurrScanX = new Radar(cabContentPath+File.separator+currScanXDirname);
+            rmCurrScanX = new Radar( lon0,  lat0,  rkm0,  kmPerDeg,  nRange,  nAzimut,  a,  b, cabContentPath+File.separator+currScanXDirname);
             try {
                 System.out.println("Load destination grid");
                 rmCurrScanX.loadDstGrid(dstGridFilename);
@@ -65,7 +83,7 @@ public class RadarMeteo2NetCDF {
                         File tryFile=new File(cabContentPath+File.separator+prevScan1CabDirname);
                         if (tryFile.exists()==true) {
 
-                            Radar rmPrevScan1 = new Radar(cabContentPath+File.separator+prevScan1CabDirname);
+                            Radar rmPrevScan1 = new Radar(lon0,  lat0,  rkm0,  kmPerDeg,  nRange,  nAzimut,  a,  b,cabContentPath+File.separator+prevScan1CabDirname);
                             System.out.println("Load destination grid");
                             rmPrevScan1.loadDstGrid(dstGridFilename);
                             System.out.println("Create source grid");

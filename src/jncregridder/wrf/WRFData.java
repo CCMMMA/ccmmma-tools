@@ -16,6 +16,8 @@ import jncregridder.util.InterpolatorBase;
 import jncregridder.util.InterpolatorParams;
 import jncregridder.util.KInterpolator;
 import jncregridder.util.NCRegridderException;
+import ucar.ma2.ArrayChar;
+import ucar.ma2.ArrayString;
 import ucar.ma2.InvalidRangeException;
 import ucar.nc2.dataset.NetcdfDataset;
 import ucar.nc2.Dimension;
@@ -36,7 +38,7 @@ public class WRFData {
     
     private String url;
     private NetcdfDataset ncDataset;
-    
+
     public GregorianCalendar gcSimStartDate;
     
     
@@ -44,13 +46,15 @@ public class WRFData {
     //////////////////////////////////////////////////
     
     public Dimension dimTime;
+    public Dimension dimDateStrLen;
     public Dimension dimWestEast;
     public Dimension dimSouthNord; 
     public Dimension dimBottomTop;
     public Dimension dimWestEastStag;
     public Dimension dimSouthNordStag; 
     public Dimension dimBottomTopStag;
-    
+
+    public int timeDim, dateStrLenDim;
     public int southNorthDim,southNorthStagDim;
     public int westEastDim,westEastStagDim;
     public int bottomTopDim,bottomTopStagDim;
@@ -170,8 +174,9 @@ public class WRFData {
     public static final int VARIABLE_VVV=46;
     public static final int VARIABLE_UST=47;
     public static final int VARIABLE_GLW=48;
+    public static final int VARIABLE_TIMES=49;
             
-    
+    private String[] TIMES = null;
     private double[][][] UUU = null;
     private double[][][] VVV = null;
     private double[][][] TT = null;
@@ -225,6 +230,8 @@ public class WRFData {
     public WRFData(String url, int interpMethod, double[] interpLevels) throws IOException, InvalidRangeException, NCRegridderException {
         
         ncDataset = NetcdfDataset.openDataset(url);
+
+
         
         List<Attribute> attrs = ncDataset.getGlobalAttributes();
         for (Attribute attr:attrs) {
@@ -233,13 +240,13 @@ public class WRFData {
                 // 2011-09-20_00:00:00
                 // 0123456789012345678
                 // 2011-12-12Z0
-                int year = Integer.parseInt(simStartDate.substring(0,4));
+                 int year = Integer.parseInt(simStartDate.substring(0,4));
                 int month = Integer.parseInt(simStartDate.substring(5,7));
                 int day = Integer.parseInt(simStartDate.substring(8,10));
                 int hour = Integer.parseInt(simStartDate.substring(11,13));
                 int min = Integer.parseInt(simStartDate.substring(14,16));
                 int sec = Integer.parseInt(simStartDate.substring(17,19));
-                
+
                 gcSimStartDate = new GregorianCalendar(year,month-1,day,hour,min,sec);
                 
                 logger.log(Level.INFO,
@@ -315,10 +322,14 @@ public class WRFData {
         
         
         dimTime = ncDataset.findDimension("Time");
+        dimDateStrLen = ncDataset.findDimension("DateStrLen");
         dimWestEastStag = ncDataset.findDimension("west_east_stag");
         dimSouthNordStag = ncDataset.findDimension("south_north_stag");
         dimBottomTopStag = ncDataset.findDimension("bottom_top_stag");
-        
+
+        timeDim=dimTime.getLength();
+        dateStrLenDim=dimDateStrLen.getLength();
+
         southNorthStagDim=dimSouthNordStag.getLength();
         westEastStagDim=dimWestEastStag.getLength();
         bottomTopStagDim=dimBottomTopStag.getLength();
@@ -488,12 +499,25 @@ public class WRFData {
         
         
     }
+
+    public  GregorianCalendar getDate() throws InvalidRangeException, IOException, NCRegridderException {
+        String date=getTimes()[localTime];
+        int year = Integer.parseInt(date.substring(0,4));
+        int month = Integer.parseInt(date.substring(5,7));
+        int day = Integer.parseInt(date.substring(8,10));
+        int hour = Integer.parseInt(date.substring(11,13));
+        int min = Integer.parseInt(date.substring(14,16));
+        int sec = Integer.parseInt(date.substring(17,19));
+
+        return new GregorianCalendar(year,month-1,day,hour,min,sec);
+    }
     
     
     public void setTime(int localTime)  {
     
         this.localTime = localTime;
-        
+
+        TIMES=null;
         XLAT=null;
         XLONG=null;
         PTOP=null;
@@ -537,7 +561,27 @@ public class WRFData {
         WSPD=null;
         UST=null;
     }
-    
+
+    public String[] getTimes() throws IOException, InvalidRangeException, NCRegridderException {
+        if (TIMES==null) {
+            Variable  varTIMES = ncDataset.findVariable("Times");
+            if (varTIMES!=null) {
+                TIMES = new String[timeDim];
+                ArrayChar.D2 aTIMES=(ArrayChar.D2)varTIMES.read(new int[] {0,0}, new int[]{ timeDim,dateStrLenDim});
+
+                for (int t=0;t<timeDim;t++) {
+                    String s="";
+                    for (int c=0;c<dateStrLenDim;c++) {
+                        s+= aTIMES.get(t,c);
+                    }
+                    TIMES[t]=s;
+                }
+
+            } else throw new NCRegridderException("Times Variable not found!");
+        }
+        return TIMES;
+    }
+
     public double[][] getWindDir() throws NCRegridderException, IOException, InvalidRangeException { return load(VARIABLE_WDIR)[0];}
     public double[][] getWindSpeed() throws NCRegridderException, IOException, InvalidRangeException { return load(VARIABLE_WSPD)[0];}
     

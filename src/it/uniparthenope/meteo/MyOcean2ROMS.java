@@ -26,17 +26,7 @@ import jncregridder.data.myocean.MyOceanTem;
 import jncregridder.roms.ROMSBoundary;
 import jncregridder.roms.ROMSGrid;
 import jncregridder.roms.ROMSInit;
-import jncregridder.util.BiCubicInterpolator;
-import jncregridder.util.BiCubicInterpolator3D;
-import jncregridder.util.BilinearInterpolator;
-import jncregridder.util.BilinearInterpolator3D;
-import jncregridder.util.FastKInterpolator3D;
-import jncregridder.util.InterpolatorException;
-import jncregridder.util.InterpolatorParams;
-import jncregridder.util.KInterpolator;
-import jncregridder.util.KInterpolator3D;
-import jncregridder.util.KrigingException;
-import jncregridder.util.NCRegridderException;
+import jncregridder.util.*;
 import ucar.ma2.InvalidRangeException;
 
 /**
@@ -47,24 +37,45 @@ public class MyOcean2ROMS {
 
     private static final int MYOCEAN=0;
     private static final int COPERNICUS=1;
+    private static final int ROMS=2;
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) throws IOException, NCRegridderException, KrigingException, NoSuchAlgorithmException, InterpolatorException, InvalidRangeException { // Diana
+
+/*
+        new MyOcean2ROMS(
+                "/Users/raffaelemontella/dev/ccmmma/roms/data/Campania_200m_extended_v2.nc",
+                "/Users/raffaelemontella/dev/ccmmma/roms/myocean/20180731",
+                "20180731",
+                "d03",
+                "/Users/raffaelemontella/dev/ccmmma/roms/init/ini-d03.nc",
+                "/Users/raffaelemontella/dev/ccmmma/roms/init/bry-d03.nc",
+                2,
+                "/Users/raffaelemontella/dev/ccmmma/roms/csv/",
+                1,
+                1,
+                1
+        );
+*/
+
+
         try {
             
             if (args.length != 11) {
                 System.out.println("Usage:");
                 System.out.println("MyOcean2ROMS gridPath dataPath YYYYMMDD domainId initFilename boundaryFilename method csvPath subset2D subset3D format");
-                System.out.println("method: 0 -Kriging; 1-Fast Kriging(suggested); 2-Bilinear; 3-Bicubic");
+                System.out.println("method: 0 -Kriging; 1-Fast Kriging; 2-Bilinear (suggested); 3-Bicubic; 4-IDW");
                 System.out.println("format: 0 -MyOcean; 1-Copernicus");
                 System.exit(0);
             }
             new MyOcean2ROMS(args[0],args[1],args[2],args[3],args[4],args[5], Integer.parseInt(args[6]),args[7],Double.parseDouble(args[8]),Double.parseDouble(args[9]),Integer.parseInt(args[10]));
         } catch (InvalidRangeException ex) {// Diana
             Logger.getLogger(MyOcean2ROMS.class.getName()).log(Level.SEVERE, null, ex); // Diana
-        } 
+        }
+
+
     }
     
     private ROMSBoundary romsBoundary=null; 
@@ -216,10 +227,10 @@ public class MyOcean2ROMS {
                 fw.close();
             }
 
-            IPotentialTemperature dataTem;
-            ISalinity dataSal;
-            ISeaSurfaceHeight dataSSH;
-            ICurrent dataCur;
+            IPotentialTemperature dataTem=null;
+            ISalinity dataSal=null;
+            ISeaSurfaceHeight dataSSH=null;
+            ICurrent dataCur=null;
 
 
 
@@ -236,6 +247,9 @@ public class MyOcean2ROMS {
                     dataSal = new CopernicusSal(myOceanPathSal); // Diana
                     dataSSH = new CopernicusSSH(myOceanPathSSH); // Diana
                     dataCur = new CopernicusCur(myOceanPathCur);
+                    break;
+
+                case ROMS:
                     break;
 
                 default:
@@ -293,7 +307,7 @@ public class MyOcean2ROMS {
             romsBoundary = new ROMSBoundary(romsBoundaryPath,romsGrid,ncepDate, forcingTimeSteps);
             romsBoundary.setOceanTime(oceanTime);
             romsBoundary.make();
-            
+            //forcingTimeSteps=1;
             // For each time step in myocean data
             for (int t=0;t<forcingTimeSteps;t++) {
                 System.out.println("Time:"+t+" "+oceanTime[t]);
@@ -512,6 +526,27 @@ public class MyOcean2ROMS {
                     System.out.println("Interpolating SAL");
                     SAL_ROMS = interpolator3DRho.interp(VOSALINE,1e+20,1e+37,null); // Diana
 
+                } else if (method==4) {
+
+                    IDWInterpolator idwInterpolatorRho = new IDWInterpolator(LATXY,LONXY,LATRHO,LONRHO,srcMASK,dstMASKRHO);
+
+                    SSHE_ROMS=idwInterpolatorRho.interp(SOSSHEIG,1e+20,1e+37, null );
+
+                    IDWInterpolator3D interpolator3DRho = new IDWInterpolator3D(LATXY,LONXY,myOceanZ,LATRHO,LONRHO,romsZ,srcMASK,dstMASKRHO);
+                    IDWInterpolator3D interpolator3DU = new IDWInterpolator3D(LATXY,LONXY,myOceanZ,LATU,LONU,romsZ,srcMASK,dstMASKU);
+                    IDWInterpolator3D interpolator3DV = new IDWInterpolator3D(LATXY,LONXY,myOceanZ,LATV,LONV,romsZ,srcMASK,dstMASKV);
+
+                    System.out.println("Interpolating U");
+                    U_ROMS = interpolator3DU.interp(VOZOCRTX,1e+20,1e+37,pIntegralScale);
+
+                    System.out.println("Interpolating V");
+                    V_ROMS = interpolator3DV.interp(VOMECRTY,1e+20,1e+37,pIntegralScale);
+
+                    System.out.println("Interpolating TEMP");
+                    TEM_ROMS = interpolator3DRho.interp(VOTEMPER,1e+20,1e+37,null); // Diana
+                    System.out.println("Interpolating SAL");
+                    SAL_ROMS = interpolator3DRho.interp(VOSALINE,1e+20,1e+37,null); // Diana
+
                 }
             
             
@@ -606,9 +641,9 @@ public class MyOcean2ROMS {
                 
                 romsInit.setSALT(SAL_ROMS);
                 romsInit.setTEMP(TEM_ROMS);
+                romsInit.setZETA(SSHE_ROMS);
                 romsInit.setUBAR(UBAR);
                 romsInit.setVBAR(VBAR);
-                romsInit.setZETA(SSHE_ROMS);
                 romsInit.setU(U_ROMS);
                 romsInit.setV(V_ROMS);
                 
@@ -630,9 +665,10 @@ public class MyOcean2ROMS {
                 System.out.println("Time:"+t+" Saving bry file...");
                 romsBoundary.setSALT(SAL_ROMS);
                 romsBoundary.setTEMP(TEM_ROMS);
+                romsBoundary.setZETA(SSHE_ROMS);
+
                 romsBoundary.setUBAR(UBAR);
                 romsBoundary.setVBAR(VBAR);
-                romsBoundary.setZETA(SSHE_ROMS);
                 romsBoundary.setU(U_ROMS);
                 romsBoundary.setV(V_ROMS);
                 

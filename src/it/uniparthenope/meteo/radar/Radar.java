@@ -8,14 +8,17 @@ import com.mindprod.ledatastream.LEDataInputStream;
 import com.mindprod.ledatastream.LEDataOutputStream;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import jncregridder.util.InterpolatorBase;
 import jncregridder.util.InterpolatorException;
+import jncregridder.util.JulianDate;
 import jncregridder.util.PolarInterpolator;
-import ucar.ma2.ArrayDouble;
-import ucar.ma2.InvalidRangeException;
+import ucar.ma2.*;
+import ucar.nc2.Attribute;
 import ucar.nc2.Dimension;
+import ucar.nc2.NetcdfFileWriter;
 import ucar.nc2.Variable;
 import ucar.nc2.dataset.NetcdfDataset;
 
@@ -31,7 +34,9 @@ public class Radar {
         "oct","nov","dec"
     };
     
-    float undef=-9.99e+08f;
+    public static final float undef=-9.99e+08f;
+    //public static final float fillValue=1e37f;
+
     private Dimension dstDimLat = null;
     private Dimension dstDimLon = null;
     private double[][] dstLAT=null;
@@ -396,5 +401,147 @@ public class Radar {
                 }
             }
         }
+    }
+
+    public void saveAsNetCDF(String outputFilename) throws IOException, InvalidRangeException {
+         Variable time=null;
+         Variable lat=null;
+         Variable lon=null;
+
+        Variable reflectivity=null;
+        Variable rain=null;
+        Variable mask=null;
+
+        int etaRho = dstLON.length;
+        int xiRho = dstLON[0].length;
+
+
+        NetcdfFileWriter ncfWriterUVStress = NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf4_classic, outputFilename, null);
+
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+        ncfWriterUVStress.addGroupAttribute(null, new Attribute("type", "Weather Radar"));
+        ncfWriterUVStress.addGroupAttribute(null, new Attribute("title", ""));
+        ncfWriterUVStress.addGroupAttribute(null, new Attribute("grd_file", ""));
+        ncfWriterUVStress.addGroupAttribute(null, new Attribute("source", "http://meteo.uniparthenope.it"));
+
+        ncfWriterUVStress.addGroupAttribute(null, new Attribute("date", sdf.format(cal.getTime())));
+
+        ncfWriterUVStress.addDimension(null,"eta_rho", etaRho);
+        ncfWriterUVStress.addDimension(null,"xi_rho", xiRho);
+
+        ncfWriterUVStress.addUnlimitedDimension("time");
+
+        lat=ncfWriterUVStress.addVariable(null,"lat", DataType.DOUBLE, "eta_rho xi_rho");
+        lat.addAttribute(new Attribute("long_name","latitude of RHO-points"));
+        lat.addAttribute(new Attribute("units","degree_north"));
+        lat.addAttribute(new Attribute("field","lat_rho, scalar"));
+        lat.addAttribute(new Attribute("standard_name","latitude"));
+        lat.addAttribute(new Attribute("_CoordinateAxisType", "Lat"));
+
+        lon=ncfWriterUVStress.addVariable(null,"lon", DataType.DOUBLE, "eta_rho xi_rho");
+        lon.addAttribute(new Attribute("long_name","longitude of RHO-points"));
+        lon.addAttribute(new Attribute("units","degree_east"));
+        lon.addAttribute(new Attribute("field","lon_rho, scalar"));
+        lon.addAttribute(new Attribute("standard_name","longitude"));
+        lon.addAttribute(new Attribute("_CoordinateAxisType", "Lon"));
+
+        time=ncfWriterUVStress.addVariable(null,"time", DataType.DOUBLE, "time");
+        time.addAttribute(new Attribute("long_name", "time"));
+        time.addAttribute(new Attribute("units", "days since 1968-05-23 00:00:00 GMT"));
+        time.addAttribute(new Attribute("calendar", "gregorian"));
+
+        reflectivity=ncfWriterUVStress.addVariable(null,"reflectivity", DataType.FLOAT, "time eta_rho xi_rho");
+        reflectivity.addAttribute(new Attribute("long_name","Reflectivity"));
+        reflectivity.addAttribute(new Attribute("units","DbZ"));
+        reflectivity.addAttribute(new Attribute("time","time"));
+        reflectivity.addAttribute(new Attribute("_FillValue", undef));
+
+        rain=ncfWriterUVStress.addVariable(null,"rain", DataType.FLOAT, "time eta_rho xi_rho");
+        rain.addAttribute(new Attribute("long_name","Rain"));
+        rain.addAttribute(new Attribute("units","mm"));
+        rain.addAttribute(new Attribute("time","time"));
+        rain.addAttribute(new Attribute("_FillValue", undef));
+
+        mask=ncfWriterUVStress.addVariable(null,"mask", DataType.INT, "eta_rho xi_rho");
+        mask.addAttribute(new Attribute("long_name","Mask"));
+        mask.addAttribute(new Attribute("_FillValue", undef));
+
+        ncfWriterUVStress.create();
+
+
+
+
+
+
+        ArrayDouble.D2 outALonRho = new ArrayDouble.D2(etaRho,xiRho);
+        ArrayDouble.D2 outALatRho = new ArrayDouble.D2(etaRho,xiRho);
+        ArrayInt.D2 outAMask = new ArrayInt.D2(etaRho,xiRho);
+
+
+        for(int j=0;j<etaRho;j++) {
+            for (int i=0;i<xiRho;i++) {
+                outALonRho.set(j, i, dstLON[j][i]);
+                outALatRho.set(j, i, dstLAT[j][i]);
+                outAMask.set(j, i, dstMASK[j][i]);
+            }
+        }
+
+        ncfWriterUVStress.write(lon, new int[]{0, 0}, outALonRho);
+        ncfWriterUVStress.write(lat, new int[]{0, 0}, outALatRho);
+        ncfWriterUVStress.write(mask, new int[]{0, 0}, outAMask);
+
+        ArrayDouble.D1 outATime = new ArrayDouble.D1(1);
+        ArrayFloat.D3 outAReflectivity = new ArrayFloat.D3(1,etaRho, xiRho);
+        ArrayFloat.D3 outARain = new ArrayFloat.D3(1,etaRho, xiRho);
+
+
+
+        int year = gcDate.get(Calendar.YEAR);
+        int month = gcDate.get(Calendar.MONTH)+1;
+        int day = gcDate.get(Calendar.DAY_OF_MONTH);
+        int hour = gcDate.get(Calendar.HOUR_OF_DAY);
+        int min = gcDate.get(Calendar.MINUTE);
+
+        GregorianCalendar date=new GregorianCalendar(year,month-1,day,hour,min,0);
+
+        double dDate = JulianDate.toJulian(date);
+        double dModOffset = JulianDate.get19680523();
+        double dModDate = dDate - dModOffset;
+
+        double dModJulianDate = dModDate ;
+        outATime.set(0, dModJulianDate);
+
+
+        //String sDate=String.format("%02d", hour)+":"+String.format("%02d", min)+"Z"+String.format("%02d", day)+months[month]+year;
+
+        float value=Float.NaN;
+        for (int j=0;j<etaRho;j++) {
+            for (int i = 0; i < xiRho; i++) {
+                value=(float)dstReflectivity[j][i];
+                if (value<-30) {
+                    value=undef;
+                }
+                outAReflectivity.set(0,j, i, value);
+
+                value=(float)dstRain[j][i];
+                if (value<0.1) {
+                    value=undef;
+                }
+                outARain.set(0,j, i, value);
+            }
+        }
+
+        ncfWriterUVStress.write(reflectivity, new int[]{0, 0, 0}, outAReflectivity);
+        ncfWriterUVStress.write(rain, new int[]{0, 0, 0}, outARain);
+        ncfWriterUVStress.write(time, new int [] { 0 }, outATime);
+
+        ncfWriterUVStress.flush();
+        ncfWriterUVStress.close();
+
+
+        System.err.println("Done");
+
     }
 }

@@ -41,7 +41,7 @@ public abstract class Interpolator3DBase extends InterpolatorBase {
         dstDepthDim = dstZ.length;
         
         
-        
+        // Search the minimum value of Z in the destination grid
         for (int k=0;k<dstZ.length;k++) {
             for (int j=0;j<dstSNDim;j++) {
                 for (int i=0;i<dstWEDim;i++) {

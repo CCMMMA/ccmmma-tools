@@ -40,11 +40,13 @@ public abstract class InterpolatorBase {
     
     protected void init(double[][] srcLAT, double[][] srcLON, double[][] dstLAT, double[][] dstLON, int[][] srcMASK,int[][] dstMASK) throws InterpolatorException {
         if (srcLAT==null) throw new InterpolatorException("Source grid latitudes are null!");
-        if (srcLON==null) throw new InterpolatorException("Source grid lonfitudes are null!");
+        if (srcLON==null) throw new InterpolatorException("Source grid longitudes are null!");
         if (dstLAT==null) throw new InterpolatorException("Destination grid latitudes are null!");
-        if (dstLON==null) throw new InterpolatorException("Destination grid lonfitudes are null!");
-        
+        if (dstLON==null) throw new InterpolatorException("Destination grid longitudes are null!");
+
+        // Check if the source mask is null
         if (srcMASK==null) {
+            // Create a source mask of all valid points
             srcMASK = new int[srcLAT.length][srcLON[0].length];
             for (int j=0;j<srcLAT.length;j++) {
                 for (int i=0;i<srcLON[0].length;i++) {
@@ -52,8 +54,10 @@ public abstract class InterpolatorBase {
                 }
             }
         }
-        
+
+        // Check if the destination mask is null
         if (dstMASK==null) {
+            // Create a destination mask of all valid points
             dstMASK = new int[dstLAT.length][dstLON[0].length];
             for (int j=0;j<dstLAT.length;j++) {
                 for (int i=0;i<dstLON[0].length;i++) {
@@ -75,7 +79,8 @@ public abstract class InterpolatorBase {
         
         dstSNDim = dstLAT.length;
         dstWEDim = dstLAT[0].length;
-        
+
+        // Evaluate the destination grid bounding box
         for (int j=0;j<dstSNDim;j++) {
             for (int i=0;i<dstWEDim;i++) {
                 if (dstMASK[j][i]==1) {
@@ -107,7 +112,8 @@ public abstract class InterpolatorBase {
                 }
             }
         }
-        
+
+        // Evaluate the source grid bounding box
         for (int j=0;j<srcSNDim;j++) {
             for (int i=0;i<srcWEDim;i++) {
                 if (srcMASK[j][i]==1) {

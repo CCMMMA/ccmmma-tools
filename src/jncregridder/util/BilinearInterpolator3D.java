@@ -22,10 +22,14 @@ public class BilinearInterpolator3D extends Interpolator3DBase {
     }
     
     public void prepare() {
+
+        // Get the number of destination levels
         int dstLevs = dstZ.length;
         
         System.out.println("dstMinZ:"+dstMinZ);
         int k=0;
+
+        // For each source level
         while (k<srcZ.length && Math.abs(srcZ[k][0][0])<=Math.abs(dstMinZ)) {
             System.out.println("srcDEPTH:"+srcZ[k][0][0]);
             k++;

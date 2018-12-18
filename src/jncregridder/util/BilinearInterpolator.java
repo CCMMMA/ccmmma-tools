@@ -4,6 +4,12 @@
  */
 package jncregridder.util;
 
+import it.uniparthenope.meteo.Haversine;
+
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Vector;
+
 /**
  *
  * @author raffaelemontella
@@ -43,13 +49,37 @@ public class BilinearInterpolator extends InterpolatorBase {
         
         double dstLat,dstLon;
 
+        class Point {
+            int j;
+            int i;
+            double dist;
+            double value;
+            double w;
 
-        int[] II=new int[4];
-        int[] JJ=new int[4];
-        double[] q=new double[4];
-        double[] d = new double[4];
-        double[] w = new double[4];
-        
+            Point (int j, int i, double dist, double value) {
+                this.j=j;
+                this.i=i;
+                this.dist=dist;
+                this.value=value;
+            }
+
+            Point (int j, int i, double value) {
+                this.j=j;
+                this.i=i;
+                this.dist=-1;
+                this.value=value;
+            }
+
+            @Override
+            public  String toString() {
+                return j+","+i+","+value+","+dist;
+            }
+        }
+
+
+
+
+
         double srcMean=0;
         int srcCount=0;
         double dstMean=0;
@@ -78,102 +108,129 @@ public class BilinearInterpolator extends InterpolatorBase {
                     int iR=(int)(srcII);
                     int jR=(int)(srcJJ);
 
-                    // The number of weights considered for interpolation
-                    int nW=0;
 
-                    int b=0;
-                    do {
-                        b++;
+                    Vector<Point> pointsBilinear=new Vector<>();
 
-                        // Temporary II vertices
-                        int[] tII = new int[] { iR-(b-1),iR+b,iR+b,iR-(b-1) };
+                    for (int j=jR;j<=jR+1;j++) {
 
-                        // Limit the II index
-                        for (int i=0;i<tII.length;i++) {
-                            if (tII[i]>=src[0].length) {
-                                tII[i]=src[0].length-1;
+                        int jj=j;
+                        if (j>=src.length) {
+                            jj=src.length-1;
+                        }
+
+                        for (int i = iR ;i<=iR+1; i++) {
+
+                            int ii=i;
+                            if (i>=src[0].length) {
+                                ii=src[0].length-1;
                             }
-                        }
 
-
-                        // Temporary JJ vertices
-                        int[] tJJ = new int[] { jR-(b-1),jR-(b-1),jR+b,jR+b };
-
-                        // Limit the JJ index
-                        for (int j=0;j<tJJ.length;j++) {
-                            if (tJJ[j]>=src.length) {
-                                tJJ[j]=src.length-1;
+                            if (Double.isNaN(src[jj][ii]) == false && src[jj][ii] != srcMissingValue) {
+                                pointsBilinear.add(new Point(jj, ii,src[jj][ii]));
                             }
-                        }
-
-                        /*
-                        double[] tQ = {
-                                src[tJJ[0]][tII[0]],
-                                src[tJJ[0]][tII[2]],
-                                src[tJJ[2]][tII[2]],
-                                src[tJJ[2]][tII[0]]
-                        };
-                        */
-
-                        double[] tQ = {
-                                src[tJJ[0]][tII[0]],
-                                src[tJJ[1]][tII[1]],
-                                src[tJJ[2]][tII[2]],
-                                src[tJJ[3]][tII[3]]
-                        };
-
-                        nW=0;
-                        for (int l=0;l<4;l++) {
-                            if (Double.isNaN(tQ[l])==false && tQ[l]!=srcMissingValue) {
-                                q[nW]=tQ[l];
-                                JJ[nW]=tJJ[nW];
-                                II[nW]=tII[nW];
-                                nW++;
-                            }
-                        }
-                        
-                    } while (nW==0 & b<3);
-
-
-                    double latIJ,lonIJ;
-                    double dS=0;
-
-                    if (nW==0) {
-                        //throw new InterpolatorException("nW is 0! ("+dstLon+","+dstLat+")");
-                        dst[dstJ][dstI]=dstMissingValue;
-                    } else if (nW==1) {
-                        dst[dstJ][dstI]=q[0];
-                        srcMean+=q[0];
-                        srcCount++;
-                        
-                    } else {
-                        for ( int a=0;a<nW;a++) {
-
-                            latIJ = srcLAT[JJ[a]][II[a]];
-                            lonIJ = srcLON[JJ[a]][II[a]];
-
-
-                            d[a] = Math.pow((latIJ-dstLAT[dstJ][dstI])*(latIJ-dstLAT[dstJ][dstI])+(lonIJ-dstLON[dstJ][dstI])*(lonIJ-dstLON[dstJ][dstI]),.5);
-                            dS+=(1/d[a]);
-                        }
-
-                        double sW=0;
-                        for ( int a=0;a<nW;a++) {
-                            w[a] = (1/(d[a]))/(dS);
-                            sW+=w[a];
-                        }
-                        if (sW<1-TOLL || sW>1+TOLL) throw new InterpolatorException("Bad w:"+sW);
-
-
-                        dst[dstJ][dstI]=0;
-                        for (int l=0;l<nW;l++) {
-                            dst[dstJ][dstI]+=w[l]*q[l];
-                            srcMean+=q[l];
-                            srcCount++;
                         }
                     }
-                    // System.out.println("dstLon:"+dstLon+" dstLat:"+dstLat+" nW="+nW+" b="+b+" dst="+dst[dstJ][dstI]);
+
+                    // Check if we have just 4 points (regular case)
+                    if (pointsBilinear.size()==4) {
+                        // Perform regular bilinear interpolation
+
+                        double x1=srcLON[pointsBilinear.get(0).j][pointsBilinear.get(0).i];
+                        double y1=srcLAT[pointsBilinear.get(0).j][pointsBilinear.get(0).i];
+                        double x2=srcLON[pointsBilinear.get(1).j][pointsBilinear.get(1).i];
+                        double y2=srcLAT[pointsBilinear.get(2).j][pointsBilinear.get(2).i];
+
+                        dst[dstJ][dstI]=
+                                (
+                                        pointsBilinear.get(0).value * (x2 - dstLon) * (y2 - dstLat) +
+                                                pointsBilinear.get(1).value * (dstLon - x1) * (y2 - dstLat) +
+                                                pointsBilinear.get(2).value * (x2 - dstLon) * (dstLat - y1) +
+                                                pointsBilinear.get(3).value * (dstLon - x1) * (dstLat - y1)
+                                ) / (
+                                        (x2 - x1) * (y2 - y1) + 0.0
+                                );
+                        srcMean+=(pointsBilinear.get(0).value+pointsBilinear.get(1).value+pointsBilinear.get(2).value+pointsBilinear.get(3).value);
+                        srcCount=srcCount+4;
+/*
+                        System.out.println("---------------------------------");
+                        System.out.println("BILINEAR:"+dst[dstJ][dstI]);
+                        for (Point point:pointsBilinear) {
+                            System.out.println(point);
+                        }
+                        System.out.println("---------------------------------");
+*/
+                    }
+                    else  {
+                        // With just 0, 1, 2 or 3 points, let we use the IDW
+
+                        Vector<Point> pointsIDW=new Vector<>();
+                        int size=0;
+
+                        do {
+                            size++;
+                            for (int j = jR - size; j <= jR + size; j++) {
+                                int jj = j;
+                                if (j >= src.length) {
+                                    jj = src.length - 1;
+                                }
+                                if (j < 0) {
+                                    jj = 0;
+                                }
+                                for (int i = iR - size; i <= iR + size; i++) {
+                                    int ii = i;
+                                    if (i >= src[0].length) {
+                                        ii = src[0].length - 1;
+                                    }
+                                    if (i < 0) {
+                                        ii = 0;
+                                    }
+                                    if (Double.isNaN(src[jj][ii]) == false && src[jj][ii] != srcMissingValue) {
+                                        pointsIDW.add(
+                                                new Point(
+                                                        jj, ii,
+                                                        Haversine.distance(
+                                                                dstLAT[dstJ][dstI],
+                                                                dstLON[dstJ][dstI],
+                                                                srcLAT[jj][ii],
+                                                                srcLON[jj][ii]
+                                                        ),
+                                                        src[jj][ii]
+                                                )
+                                        );
+                                    }
+                                }
+                            }
+                        } while (pointsIDW.size()==0 && size<4);
+
+                        if (pointsIDW.size()>0) {
+                            double weighted_values_sum = 0.0;
+                            double sum_of_weights = 0.0;
+                            double weight;
+                            for (Point point : pointsIDW) {
+                                weight = 1/point.dist;
+                                sum_of_weights += weight;
+                                weighted_values_sum += weight * point.value;
+                                srcMean += point.value;
+                                srcCount++;
+                            }
+                            dst[dstJ][dstI]=weighted_values_sum / sum_of_weights;
+
+/*
+                        System.out.println("---------------------------------");
+                        System.out.println("IDW:"+dst[dstJ][dstI]);
+                        for (Point point:pointsIDW) {
+                            System.out.println(point);
+                        }
+                        System.out.println("---------------------------------");
+                        */
+                        } else {
+                            // We have no choice than a missing value
+                            dst[dstJ][dstI] = dstMissingValue;
+                        }
+                    }
+
                 } else {
+                    // No other choice
                     dst[dstJ][dstI]=dstMissingValue;
                 }
                 
@@ -196,5 +253,6 @@ public class BilinearInterpolator extends InterpolatorBase {
         // Return the results
         return dst;
     }
-    
+
+
 }

@@ -290,7 +290,10 @@ public class InverseDistanceWeighting {
                 }
             }
             
-            if (wS<1-TOLL || wS>1+TOLL) throw new InverseDistanceWeightingException("Bad w! "+wS);
+            if (wS<1-TOLL || wS>1+TOLL) {
+                throw new InverseDistanceWeightingException("Bad w! "+wS+" Station:"+dstStation.id+" j:"+dstStation.j+" i:"+dstStation.i+" lat:"+dstStation.y+" lon:"+dstStation.x);
+            }
+
             //System.out.println("Done!");
             
             idww.setRow(dstStation.id,wRow0);

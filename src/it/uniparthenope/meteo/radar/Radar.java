@@ -138,18 +138,28 @@ public class Radar {
 
 
             srcReflectivity = new double[nAzimut+1][nRange];
-            for (int j=0;j<nAzimut;j++) {
-                for (int i=0;i<nRange;i++) {
-                    srcReflectivity[j][i]=-999;
+            for (int j = 0; j < nAzimut; j++) {
+                for (int i = 0; i < nRange; i++) {
+                    srcReflectivity[j][i] = -999;
                 }
             }
 
             srcRain = new double[nAzimut+1][nRange];
 
-
             String[] childrenBin = dir.list(filterBin);
             if (childrenBin != null) {
-                for (int k=0; k<childrenBin.length; k++) {
+                int nElevation=childrenBin.length;
+                double[][][] inReflectivity = new double[nElevation][nAzimut+1][nRange];
+                for (int k=0;k<nElevation;k++) {
+                    for (int j = 0; j < nAzimut; j++) {
+                        for (int i = 0; i < nRange; i++) {
+                            inReflectivity[k][j][i] = Double.NaN;
+                        }
+                    }
+                }
+
+
+                for (int k=0; k<nElevation; k++) {
                     // Get filename of file or directory
                     String filenameBin = childrenBin[k];
 
@@ -158,8 +168,30 @@ public class Radar {
                     FileInputStream fis = new FileInputStream(cabContentPath+File.separator+filenameBin);
                     LEDataInputStream ledis = new LEDataInputStream( fis );
 
+                    for (int j=0; j < nAzimut; j++) {
+                        Header header=new Header(ledis);
+
+                        for (int i=0; i < nRange; i++) {
+                            int nextInt=ledis.readUnsignedShort();
+
+                            int dataFormat=header.getDataFormat();
+                            double q_Z2Level=(Math.pow(2,dataFormat)-1)*(-(-32)/(95.5-(-32)));
+                            double m_Z2Level=(Math.pow(2,dataFormat)-1)/(95.5-(-32));
+                            double dBZ=(nextInt-q_Z2Level)/m_Z2Level;
+
+                            if (dBZ>srcReflectivity[j][i]) {
+                                srcReflectivity[j][i]=dBZ;
+                            }
+
+                            inReflectivity[k][j][i]=dBZ;
+
+                            //int nextInt = (buffer[0] & 0xFF) | (buffer[1] & 0xFF) << 8 | (buffer[2] & 0xFF) << 16 | (buffer[3] & 0xFF) << 24;
+
+                        }
+                    }
 
 
+/***************
                     for (int j=0; j < nAzimut; j++) {
                         Header header=new Header(ledis);
 
@@ -179,12 +211,28 @@ public class Radar {
 
                         }
                     }
-
+**************/
 
                     ledis.close();
                     fis.close();   
                 }
 
+                /********+ Vincenzo & Vincenzo processing for reflectivity **********/
+
+                double Etn_Th=0.0005;
+                double Txt_Th=14.0;
+                double Z_Th=-32.0;
+
+                statFilter(inReflectivity,Etn_Th,Txt_Th,Z_Th);
+
+
+                /********************************************************************/
+
+                for (int j = 0; j < nAzimut; j++) {
+                    for (int i = 0; i < nRange; i++) {
+                        srcReflectivity[j][i] = inReflectivity[0][j][i];
+                    }
+                }
 
                 double r10, rain;
                 //a=443.5;
@@ -204,7 +252,46 @@ public class Radar {
             }
         }
     }
-    
+
+    public void statFilter(double[][][] inReflectivity, double Etn_Th, double Txt_Th, double Z_Th) {
+        double Th=5;
+        int nElevation=inReflectivity.length;
+        int nAzimut=inReflectivity[0].length;
+        int nRange=inReflectivity[0][0].length;
+        double min_nan=-999;
+        for (int k=0;k<nElevation;k++) {
+            for (int j = 0; j < nAzimut; j++) {
+                for (int i = 0; i < nRange; i++) {
+                    if (min_nan<inReflectivity[k][j][i]) {
+                        min_nan=inReflectivity[k][j][i];
+                    }
+                }
+            }
+        }
+
+        double inMin[][][]=new double[nElevation][nAzimut][nRange];
+
+        for (int k=0;k<nElevation;k++) {
+            for (int j = 0; j < nAzimut; j++) {
+                for (int i = 0; i < nRange; i++) {
+                    if (inReflectivity[k][j][i] > min_nan & inReflectivity[k][j][i] < -30.0)
+                        inReflectivity[k][j][i] = min_nan;
+                }
+            }
+        }
+
+        for (int k=0;k<nElevation;k++) {
+            for (int j = 0; j < nAzimut; j++) {
+                for (int i = 0; i < nRange; i++) {
+                    if (1==1) {
+
+                    }
+                }
+            }
+        }
+
+
+    }
 
     public void loadDstGrid(String dstGridFilename) throws IOException, InvalidRangeException {
         NetcdfDataset ncGrid=NetcdfDataset.openDataset(dstGridFilename);

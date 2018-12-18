@@ -30,7 +30,7 @@ public class RadarMeteo2NetCDF {
         double a=128.3;
         double b=1.67;
 
-
+/*
         if (args.length!=12) {
             System.out.println("Usage:\n... lon0 lat0 rkm0 kmPerDeg nRange nAzimut a b cabContentPath currScanXDirname dstGridFilename outputFilename");
             System.exit(-1);
@@ -48,7 +48,7 @@ public class RadarMeteo2NetCDF {
         currScanXDirname=args[9];
         dstGridFilename=args[10];
         outputFilename=args[11];
-
+*/
 
         RadarMeteo2NetCDF radarMeteo2NetCDF = new RadarMeteo2NetCDF(lon0,  lat0,  rkm0,  kmPerDeg,  nRange,  nAzimut,  a,  b, cabContentPath, currScanXDirname, dstGridFilename,  outputFilename);
 

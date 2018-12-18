@@ -524,17 +524,19 @@ public class ROMSWind {
 
             System.out.println("------");
 
+            // Rotate each point
+            ROMSUtil.rotate(u10mMatrix,v10mMatrix,angleMatrix,1e37);
 
             for (int j=0;j<etaRho;j++) {
                 for (int i=0;i<xiRho;i++) {
-                    //double rotU10m=u10m[j][i]*Math.cos(-angle[j][i])-v10m[j][i]*Math.sin(-angle[j][i]);
-                    //double rotV10m=-u10m[j][i]*Math.sin(-angle[j][i])-v10m[j][i]*Math.cos(-angle[j][i]);
 
-                    double rotU10m = (u10mMatrix[j][i] * Math.cos(-angleMatrix[j][i]) + v10mMatrix[j][i] * Math.sin(-angleMatrix[j][i]));
-                    double rotV10m = (v10mMatrix[j][i] * Math.cos(-angleMatrix[j][i]) - u10mMatrix[j][i] * Math.sin(-angleMatrix[j][i]));
+                    //double rotU10m = (u10mMatrix[j][i] * Math.cos(-angleMatrix[j][i]) + v10mMatrix[j][i] * Math.sin(-angleMatrix[j][i]));
+                    //double rotV10m = (v10mMatrix[j][i] * Math.cos(-angleMatrix[j][i]) - u10mMatrix[j][i] * Math.sin(-angleMatrix[j][i]));
 
-                    outAU10m.set(0,j, i, (float)rotU10m);
-                    outAV10m.set(0,j, i, (float)rotV10m);
+
+
+                    outAU10m.set(0,j, i, (float)u10mMatrix[j][i]);
+                    outAV10m.set(0,j, i, (float)v10mMatrix[j][i]);
                     outATAir.set(0,j, i, (float)t2mMatrix[j][i]);
                     outAPAir.set(0,j, i, (float)slpMatrix[j][i]);
                     outAQAir.set(0,j, i, (float)rh2Matrix[j][i]);

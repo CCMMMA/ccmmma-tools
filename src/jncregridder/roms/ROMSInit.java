@@ -218,6 +218,7 @@ import ucar.nc2.Variable;
         temp.addAttribute(new Attribute("units","Celsius"));
         temp.addAttribute(new Attribute("coordinates","lon_rho lat_rho sc_r ocean_time"));
         temp.addAttribute(new Attribute("_FillValue", 1e37f));
+        temp.addAttribute(new Attribute("missing_value", 1e37f));
         temp.addAttribute(new Attribute("time", "ocean_time"));
         
         salt=ncfWritable.addVariable(null,"salt", DataType.DOUBLE, "ocean_time s_rho eta_rho xi_rho");
@@ -225,6 +226,7 @@ import ucar.nc2.Variable;
         salt.addAttribute(new Attribute("units","PSU"));
         salt.addAttribute(new Attribute("coordinates","lon_rho lat_rho sc_r ocean_time"));
         salt.addAttribute(new Attribute("_FillValue", 1e37f));
+        salt.addAttribute(new Attribute("missing_value", 1e37f));
         salt.addAttribute(new Attribute("time", "ocean_time"));
                 
         ubar=ncfWritable.addVariable(null,"ubar", DataType.DOUBLE, "ocean_time eta_u xi_u");
@@ -232,6 +234,7 @@ import ucar.nc2.Variable;
         ubar.addAttribute(new Attribute("units","meter second-1"));
         ubar.addAttribute(new Attribute("coordinates","lon_u lat_u ocean_time"));
         ubar.addAttribute(new Attribute("_FillValue", 1e37f));
+        ubar.addAttribute(new Attribute("missing_value", 1e37f));
         ubar.addAttribute(new Attribute("time", "ocean_time"));
         
         vbar=ncfWritable.addVariable(null,"vbar", DataType.DOUBLE, "ocean_time eta_v xi_v");
@@ -239,6 +242,7 @@ import ucar.nc2.Variable;
         vbar.addAttribute(new Attribute("units","meter second-1"));
         vbar.addAttribute(new Attribute("coordinates","lon_v lat_v ocean_time"));
         vbar.addAttribute(new Attribute("_FillValue", 1e37f));
+        vbar.addAttribute(new Attribute("missing_value", 1e37f));
         vbar.addAttribute(new Attribute("time", "ocean_time"));
          
         u=ncfWritable.addVariable(null,"u", DataType.DOUBLE, "ocean_time s_rho eta_u xi_u");
@@ -246,12 +250,15 @@ import ucar.nc2.Variable;
         u.addAttribute(new Attribute("units","meter second-1"));
         u.addAttribute(new Attribute("coordinates","lon_u lat_u sc_r ocean_time"));
         u.addAttribute(new Attribute("_FillValue", 1e37f));
+        u.addAttribute(new Attribute("missing_value", 1e37f));
+        u.addAttribute(new Attribute("time", "ocean_time"));
         
         v=ncfWritable.addVariable(null,"v", DataType.DOUBLE, "ocean_time s_rho eta_v xi_v");
         v.addAttribute(new Attribute("long_name","v-momentum component"));
         v.addAttribute(new Attribute("units","meter second-1"));
         v.addAttribute(new Attribute("coordinates","lon_v lat_v sc_r ocean_time"));
         v.addAttribute(new Attribute("_FillValue", 1e37f));
+        v.addAttribute(new Attribute("missing_value", 1e37f));
         v.addAttribute(new Attribute("time", "ocean_time"));
                 
         zeta=ncfWritable.addVariable(null,"zeta", DataType.DOUBLE, "ocean_time eta_rho xi_rho");
@@ -259,6 +266,7 @@ import ucar.nc2.Variable;
         zeta.addAttribute(new Attribute("units","meter"));
         zeta.addAttribute(new Attribute("coordinates","lon_rho lat_rho ocean_time"));
         zeta.addAttribute(new Attribute("_FillValue", 1e37f));
+        zeta.addAttribute(new Attribute("missing_value", 1e37f));
         zeta.addAttribute(new Attribute("time", "ocean_time"));
         
         theta_b=ncfWritable.addVariable(null,"theta_b", DataType.DOUBLE, "one");

@@ -5,10 +5,16 @@
 package it.uniparthenope.meteo;
 
 import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
+
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import jncregridder.roms.ROMSGrid;
+import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+
 import jncregridder.util.IDWInterpolator;
 import jncregridder.util.InterpolatorBase;
 import jncregridder.util.InterpolatorException;
@@ -16,6 +22,8 @@ import jncregridder.util.InterpolatorParams;
 import jncregridder.util.Linear2DInterpolator;
 import jncregridder.util.NCRegridderException;
 import jncregridder.wrf.WRFData;
+import jncregridder.ww3.WW3Grid;
+import jncregridder.ww3.WW3Wind;
 import ucar.ma2.InvalidRangeException;
 
 /**
@@ -23,94 +31,77 @@ import ucar.ma2.InvalidRangeException;
  * @author raffaelemontella
  */
 public class WRF2WW3 {
+
     private double[] interpLevels = new double[] {1000.,950.,900.,850.,800.,750.,700.,650.,600.,550.,500.,450.,400.,350.,300.,250.,200.,150.,100};
-    
-    public static void main(String[] args) throws IOException, InvalidRangeException, NCRegridderException, InterpolatorException {
-        new WRF2WW3("/Users/raffaelemontella/tmp/myocean2roms/wrf/wrf3_d03_20120828Z18.nc",6);
-    }
-    
-    public WRF2WW3(String wrfDataFilename, int wrfTimeOffset) throws IOException, InvalidRangeException, NCRegridderException, InterpolatorException {
-        
-        WRFData wrfData1 = new WRFData(wrfDataFilename,WRFData.INTERPMETHOD_DEFAULT,interpLevels);
-        
-        double[][][] latLongs=wrfData1.getLATLONGs();
-        double[][] wrfXYLAT=latLongs[0];
-        double[][] wrfXYLON=latLongs[1];
-        
-        double latStep = wrfXYLAT[1][0]-wrfXYLAT[0][0];
-        double lonStep = wrfXYLON[0][1]-wrfXYLON[0][0];
-        double radius = 4*Math.min(latStep, lonStep);
-        
-        
-        InterpolatorParams paramsWRF2XY=new InterpolatorParams();
-        paramsWRF2XY.put("radius", radius);
-        
-        InterpolatorParams paramsXY2ROMS=new InterpolatorParams();
-        paramsXY2ROMS.put("radfactor",9.);
-        
-        
-        InterpolatorBase interpWRF2XY = new IDWInterpolator(wrfData1.getXLAT(),wrfData1.getXLONG(), wrfXYLAT, wrfXYLON, null, null,paramsWRF2XY);
-        
-        ROMSGrid romsGrid = new ROMSGrid("/Users/raffaelemontella/tmp/myocean2roms/roms/roms-grid-d04.nc");
-        int etaRho = romsGrid.dimEtaRho.getLength();
-        int xiRho = romsGrid.dimXiRho.getLength();
-        
-        
-        // MASK at rho points
-        double[][] MASKRHO = romsGrid.getMASKRHO();
-        if (MASKRHO==null) {
-            throw new NCRegridderException("MASKRHO is null");
+
+    public static void main(String[] args) throws IOException, NCRegridderException, InvalidRangeException, InterpolatorException {
+
+
+        new WRF2WW3(
+                "/Users/raffaelemontella/dev/ccmmma/ww3/data/grids/d01.grd",
+                "/Users/raffaelemontella/dev/ccmmma/wrf/wrfout/",
+                0,
+                "/Users/raffaelemontella/dev/ccmmma/ww3/wrf5");
+
+        /*
+        try {
+
+            if (args.length != 4) {
+                System.out.println("Usage:");
+                System.out.println("WRF2WW3 gridFilename wrfFilename|wrfFilespath timeOffset forcingFilename");
+                System.exit(0);
+            }
+            new WRF2WW3(args[0],args[1],Integer.parseInt(args[2]), args[3]);
+
+        } catch (InvalidRangeException ex) {
+            Logger.getLogger(WRF2ROMS.class.getName()).log(Level.SEVERE, null, ex);
         }
-            
-       
-        // Binary masks
-        int[][] dstMASKRHO = new int[etaRho][xiRho];
-        
-            
-            
-        // Preparing rho destination mask
-        for (int j=0;j<etaRho;j++) {
-            for (int i=0;i<xiRho;i++) {
-                if (MASKRHO[j][i]==1) {
-                    dstMASKRHO[j][i]=1;
-                } else {
-                    dstMASKRHO[j][i]=0;
+        */
+
+
+
+    }
+
+    public WRF2WW3(  String ww3GridFilename,  String wrfFilenameOrFilesPath, int timeOffset, String ww3ForcingBasename) throws IOException, InvalidRangeException, NCRegridderException, InterpolatorException {
+
+        // Open the ROMS Grid
+        WW3Grid ww3Grid = new WW3Grid(ww3GridFilename);
+
+        System.out.println("ww3Grid :"+ww3Grid.getName()+" "+
+                ww3Grid.getCols()+","+ww3Grid.getRows()+" "+
+                ww3Grid.getDX()+","+ww3Grid.getDY()+" "+
+                ww3Grid.getLLX()+","+ww3Grid.getLLY()+" "+
+                ww3Grid.getURX()+","+ww3Grid.getURY());
+
+        WW3Wind ww3Wind= new WW3Wind(ww3ForcingBasename,ww3Grid);
+
+        File folder = new File(wrfFilenameOrFilesPath);
+        if (folder.isDirectory()) {
+            File[] listOfFiles = folder.listFiles();
+            Arrays.sort(listOfFiles);
+            if (listOfFiles != null) {
+                int count = 0;
+                for (int i = 0; i < listOfFiles.length; i++) {
+                    if (listOfFiles[i].isFile()) {
+                        if (listOfFiles[i].getName().startsWith("wrf")) {
+                            String wrfDataFilename = listOfFiles[i].getPath();
+                            System.out.println("File " + wrfDataFilename);
+                            WRFData wrfData = new WRFData(wrfDataFilename, WRFData.INTERPMETHOD_DEFAULT, interpLevels);
+                            if (count == 0) {
+                                System.out.println("Inizialization.");
+                                ww3Wind.init(wrfData,timeOffset);
+                            }
+                            System.out.println("Adding.");
+                            ww3Wind.add(wrfData, timeOffset);
+                            count++;
+                        }
+                    }
                 }
             }
+        } else {
+            WRFData wrfData = new WRFData(wrfFilenameOrFilesPath, WRFData.INTERPMETHOD_DEFAULT, interpLevels);
+            ww3Wind.init(wrfData, timeOffset);
+            ww3Wind.add(wrfData, timeOffset);
         }
-        
-        InterpolatorBase interpRho = new Linear2DInterpolator(
-            wrfXYLAT,wrfXYLON,
-            romsGrid.getLATRHO(),romsGrid.getLONRHO(),null,dstMASKRHO,paramsXY2ROMS);
-        
-        
-        
-        wrfData1.setTime(wrfTimeOffset);
-        
-        double[][] slp = interpWRF2ROMS(interpWRF2XY,interpRho,wrfData1.getSLP(), 1e20, 1e37);
-        double[][] t2m = interpWRF2ROMS(interpWRF2XY,interpRho,wrfData1.getT2(), 1e20, 1e37);
-        double[][] u10m = interpWRF2ROMS(interpWRF2XY,interpRho,wrfData1.getU10M(), 1e20, 1e37);
-        double[][] v10m = interpWRF2ROMS(interpWRF2XY,interpRho,wrfData1.getV10M(), 1e20, 1e37);
-        
-        double[][] romsLAT=romsGrid.getLATRHO();
-        double[][] romsLON=romsGrid.getLONRHO();
-        
-        FileWriter fw = new FileWriter("/Users/raffaelemontella/tmp/myocean2roms/csv/roms-lonlat.csv");
-        PrintWriter pw = new PrintWriter(fw);
-        pw.println("LON;LAT;SLP;T2M;U10M;V10M");
-        for (int j=0;j<romsLAT.length;j++) {
-            for (int i=0;i<romsLON[0].length;i++) {
-                pw.println(romsLON[j][i]+";"+romsLAT[j][i]+";"+slp[j][i]+";"+(t2m[j][i]-273.15)+";"+u10m[j][i]+";"+v10m[j][i]);
-            }
-        }
-        
-        pw.close();
-        fw.close();
-    }
-    
-    private double[][] interpWRF2ROMS(InterpolatorBase interpWRF2XY, InterpolatorBase interpROMS, double[][] src, double srcMissingValue, double dstMissingValue) throws InterpolatorException {
-        double[][] tmp = interpWRF2XY.interp(src, srcMissingValue, dstMissingValue, null);
-        double[][] dst = interpROMS.interp(tmp, srcMissingValue, dstMissingValue,null);
-        return dst;
     }
 }

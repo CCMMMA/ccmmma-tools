@@ -13,6 +13,7 @@ class Weight3D implements Serializable {
     public double[] w = new double[2];
     public int[] KK = new int[2];
     public boolean masked=false;
+    //public double h = Double.NaN;
 }
 
 
@@ -90,7 +91,8 @@ public class CustomInterpolator3D {
             }
         }
     } 
-    
+
+
     public double[][][] interp(double[][][] src,double srcMissingValue, double dstMissingValue, double[][] mask) throws NCRegridderException {
         int dstLevs = dstDEPTH.length;   
         int srcLevs = srcDEPTH.length;   

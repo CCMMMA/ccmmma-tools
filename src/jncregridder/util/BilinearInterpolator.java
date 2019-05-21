@@ -17,6 +17,7 @@ import java.util.Vector;
 public class BilinearInterpolator extends InterpolatorBase {
     
     private double TOLL=1e-6;
+    private boolean USE_IDW=true;
     
     public BilinearInterpolator(double[][] srcLAT, double[][] srcLON, double[][] dstLAT, double[][] dstLON, int[][] srcMASK,int[][] dstMASK) throws InterpolatorException {
         
@@ -135,6 +136,7 @@ public class BilinearInterpolator extends InterpolatorBase {
                     if (pointsBilinear.size()==4) {
                         // Perform regular bilinear interpolation
 
+                        /*
                         double x1=srcLON[pointsBilinear.get(0).j][pointsBilinear.get(0).i];
                         double y1=srcLAT[pointsBilinear.get(0).j][pointsBilinear.get(0).i];
                         double x2=srcLON[pointsBilinear.get(1).j][pointsBilinear.get(1).i];
@@ -149,6 +151,23 @@ public class BilinearInterpolator extends InterpolatorBase {
                                 ) / (
                                         (x2 - x1) * (y2 - y1) + 0.0
                                 );
+                                */
+
+                        double lon1=srcLON[pointsBilinear.get(0).j][pointsBilinear.get(0).i];
+                        double lat1=srcLAT[pointsBilinear.get(0).j][pointsBilinear.get(0).i];
+                        double lon2=srcLON[pointsBilinear.get(1).j][pointsBilinear.get(1).i];
+                        double lat2=srcLAT[pointsBilinear.get(2).j][pointsBilinear.get(2).i];
+
+                        double dLon=lon2-lon1;
+                        double dLat=lat2-lat1;
+
+                        // https://en.wikipedia.org/wiki/Bilinear_interpolation
+
+                        double FXY1=((lon2-dstLon)/dLon)*pointsBilinear.get(0).value+((dstLon-lon1)/dLon)*pointsBilinear.get(1).value;
+                        double FXY2=((lon2-dstLon)/dLon)*pointsBilinear.get(2).value+((dstLon-lon1)/dLon)*pointsBilinear.get(3).value;
+
+                        dst[dstJ][dstI]=((lat2-dstLat)/dLat)*FXY1+((dstLat-lat1)/dLat)*FXY2;
+
                         srcMean+=(pointsBilinear.get(0).value+pointsBilinear.get(1).value+pointsBilinear.get(2).value+pointsBilinear.get(3).value);
                         srcCount=srcCount+4;
 /*
@@ -160,7 +179,7 @@ public class BilinearInterpolator extends InterpolatorBase {
                         System.out.println("---------------------------------");
 */
                     }
-                    else  {
+                    else if (USE_IDW) {
                         // With just 0, 1, 2 or 3 points, let we use the IDW
 
                         Vector<Point> pointsIDW=new Vector<>();
@@ -227,8 +246,10 @@ public class BilinearInterpolator extends InterpolatorBase {
                             // We have no choice than a missing value
                             dst[dstJ][dstI] = dstMissingValue;
                         }
+                    } else {
+                        // We have no choice than a missing value
+                        dst[dstJ][dstI] = dstMissingValue;
                     }
-
                 } else {
                     // No other choice
                     dst[dstJ][dstI]=dstMissingValue;

@@ -41,6 +41,8 @@ public class OceanGridEU implements IOceanGrid{
     public double[][] getLAT2() throws NCRegridderException { return load(VARIABLE_LAT2)[0]; }
     public double[][] getLON2() throws NCRegridderException { return load(VARIABLE_LON2)[0]; }
 
+    public double getUndefinedValue() { return 1e20; }
+
     public double[][][] getZ() throws NCRegridderException {
         double[][][] Z = new double[depth][lat][lon];
         load(VARIABLE_DEPTH);

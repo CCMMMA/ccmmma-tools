@@ -153,6 +153,7 @@ public class ROMSGrid {
     private double theta_s=3;
     private double theta_b=0;
     private int N = 30;
+    private double hc_threshold = 5.0D;
     private double hc=Double.NaN;
     private double zeta=0;
     
@@ -170,11 +171,11 @@ public class ROMSGrid {
     public double[] getCSR() { return cs_r; }
     public double[] getCSW() { return cs_w; }
     
-    double x1=0;
-    double e1=0;
-    double depthMin=10;
-    double depthMax=10000;
-    char spherical='T';
+    private double x1=0;
+    private double e1=0;
+    private double depthMin=10;
+    private double depthMax=10000;
+    private char spherical='T';
     
     public ROMSGrid(int cols, int rows,String url, double minLonRho, double minLatRho, double lonStep,double latStep) throws IOException {
         double maxLonRho=minLonRho + (cols*lonStep);
@@ -978,6 +979,12 @@ public class ROMSGrid {
                         }
                     }
                 }
+
+                // Check if the hc is less than the threshold
+                if (hc < hc_threshold) {
+                    hc = hc_threshold;
+                }
+
                 System.out.println("hc="+hc);
                 break;
                 

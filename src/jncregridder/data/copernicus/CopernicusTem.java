@@ -92,6 +92,8 @@ variables:
  */
 
 public class CopernicusTem extends OceanGridEU implements IPotentialTemperature {
+    public double getUndefinedValue() { return 1e20; }
+
     private double[][][] THETAO = null;
     private double[][] BOTTOMT = null;
 

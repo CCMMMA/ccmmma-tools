@@ -11,6 +11,7 @@ import ucar.ma2.InvalidRangeException;
 import ucar.nc2.Variable;
 
 public class MyOceanSSH extends OceanGridEU implements ISeaSurfaceHeight {
+    public double getUndefinedValue() { return 1e20; }
     
     private double[][] SOSSHEIG = null;  
     

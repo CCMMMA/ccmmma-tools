@@ -9,6 +9,7 @@ public interface IOceanGrid {
     public double[] getTIME() throws NCRegridderException;
     public double[][] getLAT2() throws NCRegridderException;
     public double[][] getLON2() throws NCRegridderException;
-    public double[][][] getZ() throws NCRegridderException;
+    public double [][][] getZ() throws NCRegridderException;
     public void setTime(int localTime);
+    public double getUndefinedValue();
 }

@@ -40,6 +40,16 @@ public class WRFData {
     private NetcdfDataset ncDataset;
 
     public GregorianCalendar gcSimStartDate;
+
+    class Point {
+        double lon;
+        double lat;
+
+        Point(double lat, double lon) {
+            this.lat=lat;
+            this.lon=lon;
+        }
+    }
     
     
     
@@ -655,7 +665,7 @@ public class WRFData {
         
         
         
-        
+        /******************* Calculate the best WRF square extension *******************
         for (int i=0;i<westEastDim; i++) {
             if (XLAT[0][i] > minXLAT) minXLAT=XLAT[0][i];
             if (XLAT[southNorthDim-1][i] < maxXLAT) maxXLAT=XLAT[southNorthDim-1][i];
@@ -666,26 +676,97 @@ public class WRFData {
             if (XLONG[j][westEastDim-1] < maxXLONG) maxXLONG=XLONG[j][westEastDim-1];
         }
         
+
+         ****************************************************/
+
+
+        int row_lat = XLAT.length - 1;
+        int col_lat = XLAT[0].length - 1;
+
+        int row_long = XLONG.length - 1;
+        int col_long = XLONG[0].length - 1;
+
+
+
+        Point A = new Point(XLAT[0][0], XLONG[0][0]);
+        Point B = new Point(XLAT[0][col_lat], XLONG[0][col_long]);
+        Point C = new Point(XLAT[row_lat][col_lat], XLONG[row_long][col_long]);
+        Point D = new Point(XLAT[row_lat][0], XLONG[row_long][0]);
+
+        double min_lat = XLAT[0][0];
+        int minI = 0;
+
+        // from A to B
+        for (int i=col_lat; i>=0; i=i-1 ) {
+            Point np1=new Point(XLAT[0][i], XLONG[0][i]);
+            if (np1.lat>min_lat) {
+                minI = i;
+                min_lat = np1.lat;
+            }
+        }
+
+        double max_lat = XLAT[row_lat][col_lat];
+        int maxI = col_lat;
+
+        // from C to D
+        for (int i=col_lat;i>=0; i=i-1) {
+            Point np1=new Point(XLAT[row_lat][i], XLONG[row_long][i]);
+            if (np1.lat<max_lat) {
+                maxI = i;
+                max_lat = np1.lat;
+            }
+        }
+
+        double min_long = XLONG[0][0];
+        int minJ = 0;
+
+        // from A to D
+        for (int i=row_lat; i>=0; i=i-1 ) {
+            Point np1=new Point(XLAT[i][0], XLONG[i][0]);
+            if (np1.lon>min_long) {
+                minJ = i;
+                min_long = np1.lon;
+            }
+        }
+
+        double max_long = XLONG[0][col_long];
+        int maxJ = row_lat;
+
+        // from B to C
+        for (int i=row_lat;i>=0; i=i-1) {
+            Point np1=new Point(XLAT[i][col_lat], XLONG[i][col_lat]);
+            if (np1.lon<max_long) {
+                maxJ = i;
+                max_long = np1.lon;
+            }
+        }
+
+        minXLAT=min_lat;
+        minXLONG=min_long;
+        maxXLAT=max_lat;
+        maxXLONG=max_long;
+
+
+        // Calculate the average grid increment
         for (int j=0;j<southNorthDim-1; j++) {
             for (int i=0;i<westEastDim-1; i++) {
-                
-                XLATd=XLAT[j+1][i+1]-XLAT[j][i];
+
+                XLATd=Math.abs(XLAT[j+1][i+1]-XLAT[j][i]);
                 if (XLATd>maxXLATd) maxXLATd=XLATd;
                 if (XLATd<minXLATd) minXLATd=XLATd;
 
-                XLONGd=XLONG[j+1][i+1]-XLONG[j][i];
+                XLONGd=Math.abs(XLONG[j+1][i+1]-XLONG[j][i]);
                 if (XLONGd>maxXLONGd) maxXLONGd=XLONGd;
                 if (XLONGd<minXLONGd) minXLONGd=XLONGd;
-                
-            }            
+
+            }
         }
         
+        XLATd=(minXLATd+maxXLATd)/2;
+        XLONGd=(minXLONGd+maxXLONGd)/2;
         
-        //XLATd=(minXLATd+maxXLATd)/2;
-        //XLONGd=(minXLONGd+maxXLONGd)/2;
-        
-        XLATd = minXLATd/2;
-        XLONGd = minXLONGd/2;
+        //XLATd = minXLATd;
+        //XLONGd = minXLONGd;
         
         int rows = (int)((maxXLAT-minXLAT)/XLATd);
         int cols = (int)((maxXLONG-minXLONG)/XLONGd);
@@ -695,8 +776,8 @@ public class WRFData {
         double llY=minXLAT;
         
         
-        System.out.println("rows:" + rows + " minXLAT:"+minXLAT+" maxXLAT:"+maxXLAT+" XLATd:"+XLATd);
-        System.out.println("cols:" + cols + " minXLONG:"+minXLONG+" maxXLONG:"+maxXLONG+" XLONGd:"+XLONGd);
+        System.out.println("WRFData rows:" + rows + " minXLAT:"+minXLAT+" maxXLAT:"+maxXLAT+" XLATd:"+XLATd);
+        System.out.println("WRFData cols:" + cols + " minXLONG:"+minXLONG+" maxXLONG:"+maxXLONG+" XLONGd:"+XLONGd);
         
         
         double[][] lats = new double[rows][cols];

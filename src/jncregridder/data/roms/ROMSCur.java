@@ -11,6 +11,7 @@ import ucar.nc2.Variable;
 import java.io.IOException;
 
 public class ROMSCur implements ICurrent {
+    public double getUndefinedValue() { return 1e37; }
     private ROMSHistory romsHistory;
 
     public ROMSCur(String url) throws IOException, NCRegridderException {

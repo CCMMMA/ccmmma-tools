@@ -92,6 +92,7 @@ import ucar.nc2.Variable;
 import java.io.IOException;
 
 public class CopernicusCur extends OceanGridEU implements ICurrent {
+    public double getUndefinedValue() { return 1e20; }
     private double[][][] VO = null;
     private double[][][] UO = null;
 

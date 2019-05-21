@@ -18,6 +18,8 @@ import ucar.nc2.Variable;
  * @author raffaelemontella
  */
 public class MyOceanCur extends OceanGridEU implements ICurrent {
+
+    public double getUndefinedValue() { return 1e20; }
     
     private double[][] SOMESTDY = null;
     private double[][] SOZOSDX1 = null;
@@ -31,7 +33,8 @@ public class MyOceanCur extends OceanGridEU implements ICurrent {
         VOZOCRTX = null;
         super.setTime(localTime);
     }
-    
+
+
     
     public double[][] getSOMESTDY() throws NCRegridderException { return load(VARIABLE_SOMESTDY)[0]; }
     public double[][] getSOZOSDX1() throws NCRegridderException { return load(VARIABLE_SOZOSDX1)[0]; }

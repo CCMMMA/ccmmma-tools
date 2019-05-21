@@ -126,6 +126,8 @@ import ucar.nc2.Variable;
     
     private double dModSimStartDate;
     public double getModSimStartDate() { return dModSimStartDate; }
+
+    private double Tcline_value=25;
     
     public ROMSInit(String url,ROMSGrid romsGrid, String ncepDate, int forcingTimeSteps) throws IOException, InvalidRangeException, NCRegridderException {
         this.url = url;
@@ -361,7 +363,7 @@ import ucar.nc2.Variable;
         outAThetaS.set(0,romsGrid.getThetaS());
         outAThetaB.set(0,romsGrid.getThetaB());
         
-        outATCline.set(50);
+        outATCline.set(Tcline_value);
         
         ArrayDouble.D2 outALonRho = new ArrayDouble.D2(etaRho,xiRho);
         ArrayDouble.D2 outALatRho = new ArrayDouble.D2(etaRho,xiRho);

@@ -83,6 +83,7 @@ variables:
  */
 
 public class CopernicusSal extends OceanGridEU implements ISalinity {
+    public double getUndefinedValue() { return 1e20; }
     private double[][][] SO = null;
 
     public void setTime(int localTime)  {

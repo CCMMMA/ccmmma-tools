@@ -315,8 +315,7 @@ public class MyOcean2ROMS {
 
             // Set the number of forcing time steps
             int forcingTimeSteps=time.length;
-            
-            
+
             // Instantiate a ROMS init file
             romsInit = new ROMSInit(romsInitPath,romsGrid,ncepDate,forcingTimeSteps); 
 

@@ -16,6 +16,11 @@ import ucar.nc2.Variable;
  * @author Diana Di Luccio
  */
 public class MyOceanSal extends OceanGridEU implements ISalinity {
+
+
+
+    public double getUndefinedValue() { return 1e20; }
+
    private double[][][] VOSALINE = null;
    
    public void setTime(int localTime)  {

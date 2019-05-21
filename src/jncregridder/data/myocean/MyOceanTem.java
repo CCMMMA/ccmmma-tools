@@ -16,6 +16,8 @@ import ucar.nc2.Variable;
  * @author Diana Di Luccio
  */
 public class MyOceanTem extends OceanGridEU implements IPotentialTemperature {
+    public double getUndefinedValue() { return 1e20; }
+
    private double[][][] VOTEMPER = null;
    
     public void setTime(int localTime)  {

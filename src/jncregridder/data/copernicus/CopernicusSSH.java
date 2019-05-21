@@ -70,6 +70,7 @@ variables:
  */
 
 public class CopernicusSSH extends OceanGridEU implements ISeaSurfaceHeight {
+    public double getUndefinedValue() { return 1e20; }
 
     private double[][] ZOS = null;
 
